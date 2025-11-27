@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Target, Award, TrendingUp, Wallet } from "lucide-react";
+import { Loader2, Plus, Target, Award, TrendingUp, Wallet, Trophy, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { InsightsCard } from "@/components/dashboard/InsightsCard";
@@ -49,6 +49,10 @@ export default function DashboardOverview() {
   const activeGoals = goals?.filter(g => g.status === "active").length || 0;
   const recentAchievements = achievements?.slice(0, 3) || [];
 
+  const calculateLevel = (points: number) => {
+    return Math.floor(points / 500) + 1;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <motion.div
@@ -69,14 +73,23 @@ export default function DashboardOverview() {
                 </div>
                 {progress && (
                   <div className="flex items-center gap-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary">Level {Math.floor(progress.totalPoints / 500) + 1}</div>
+                    <div className="text-center p-4 border border-primary/30 rounded-md bg-primary/5">
+                      <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
+                      <div className="text-3xl font-bold text-primary">Level {calculateLevel(progress.totalPoints)}</div>
                       <div className="text-xs text-muted-foreground">{progress.totalPoints} points</div>
                     </div>
-                    <div className="h-12 w-px bg-border" />
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-accent">{activeGoals}</div>
-                      <div className="text-xs text-muted-foreground">Active Goals</div>
+                    <div className="h-16 w-px bg-border" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 border border-accent/30 rounded-md bg-accent/5">
+                        <Zap className="h-6 w-6 text-accent mx-auto mb-1" />
+                        <div className="text-2xl font-bold text-accent">{activeGoals}</div>
+                        <div className="text-xs text-muted-foreground">Active Goals</div>
+                      </div>
+                      <div className="text-center p-3 border border-secondary/30 rounded-md bg-secondary/5">
+                        <Award className="h-6 w-6 text-secondary mx-auto mb-1" />
+                        <div className="text-2xl font-bold text-secondary">{achievements?.length || 0}</div>
+                        <div className="text-xs text-muted-foreground">Achievements</div>
+                      </div>
                     </div>
                   </div>
                 )}

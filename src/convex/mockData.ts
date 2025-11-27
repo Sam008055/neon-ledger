@@ -13,8 +13,14 @@ export const seedAllMockData = mutation({
   args: {},
   handler: async (ctx) => {
     try {
+      console.log("seedAllMockData called");
       const userId = await getUserId(ctx);
       console.log("User ID:", userId);
+      
+      if (!userId) {
+        console.error("No user ID found");
+        return { success: false, message: "User not authenticated" };
+      }
       
       // Check if data already exists
       const existingAccounts = await ctx.db

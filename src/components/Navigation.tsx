@@ -53,7 +53,7 @@ export function Navigation() {
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 100);
+      }, 300); // Increased timeout for better navigation
     }
   };
 

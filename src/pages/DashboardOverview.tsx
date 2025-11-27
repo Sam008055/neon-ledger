@@ -41,14 +41,17 @@ export default function DashboardOverview() {
       toast.loading("Creating mock data...", { id: "seed-data" });
       const result = await seedMockData({});
       console.log("Mock data result:", result);
-      if (result?.success) {
+      
+      if (result && result.success) {
         toast.success("🎉 Mock data created! Explore all features now!", { id: "seed-data" });
       } else {
-        toast.error(result?.message || "Failed to seed data", { id: "seed-data" });
+        const errorMsg = result?.message || "Failed to seed data";
+        toast.error(errorMsg, { id: "seed-data" });
       }
     } catch (error: any) {
       console.error("Mock data error:", error);
-      toast.error(error?.message || "Failed to seed data. Check console for details.", { id: "seed-data" });
+      const errorMsg = error?.message || "Failed to seed data. Please try again.";
+      toast.error(errorMsg, { id: "seed-data" });
     }
   };
 
@@ -58,14 +61,17 @@ export default function DashboardOverview() {
       toast.loading("Clearing all data...", { id: "clear-data" });
       const result = await clearAllData({});
       console.log("Clear data result:", result);
-      if (result?.success) {
+      
+      if (result && result.success) {
         toast.success("🗑️ All data cleared successfully!", { id: "clear-data" });
       } else {
-        toast.error(result?.message || "Failed to clear data", { id: "clear-data" });
+        const errorMsg = result?.message || "Failed to clear data";
+        toast.error(errorMsg, { id: "clear-data" });
       }
     } catch (error: any) {
       console.error("Clear data error:", error);
-      toast.error(error?.message || "Failed to clear data. Check console for details.", { id: "clear-data" });
+      const errorMsg = error?.message || "Failed to clear data. Please try again.";
+      toast.error(errorMsg, { id: "clear-data" });
     }
   };
 

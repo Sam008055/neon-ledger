@@ -4,7 +4,10 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 
 async function getUserId(ctx: any) {
   const userId = await getAuthUserId(ctx);
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) {
+    console.error("No authenticated user found");
+    throw new Error("Unauthorized");
+  }
   return userId;
 }
 
@@ -340,11 +343,11 @@ export const seedAllMockData = mutation({
       }
     }
 
-      console.log("Mock data creation complete");
+      console.log("Mock data created successfully");
       return { success: true, message: "Mock data created successfully!" };
     } catch (error: any) {
       console.error("Error in seedAllMockData:", error);
-      return { success: false, message: error.message || "Failed to create mock data" };
+      return { success: false, message: error.message || "Failed to seed data" };
     }
   },
 });

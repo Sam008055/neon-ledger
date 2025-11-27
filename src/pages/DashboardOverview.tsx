@@ -14,6 +14,8 @@ import { SpendingChart } from "@/components/dashboard/SpendingChart";
 import { BankConnectionCard } from "@/components/dashboard/BankConnectionCard";
 import { SavingsJarCard } from "@/components/dashboard/SavingsJarCard";
 import { MoodTrackerCard } from "@/components/dashboard/MoodTrackerCard";
+import { SubscriptionTrackerCard } from "@/components/dashboard/SubscriptionTrackerCard";
+import { SelfCareCard } from "@/components/dashboard/SelfCareCard";
 
 export default function DashboardOverview() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -187,6 +189,24 @@ export default function DashboardOverview() {
                 </CardContent>
               </Card>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Financial Wellness Section */}
+        <section>
+          <h2 className="text-lg font-semibold mb-4 text-foreground">Financial Wellness</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <MoodTrackerCard />
+            <SelfCareCard />
+          </div>
+        </section>
+
+        {/* Savings & Subscriptions */}
+        <section>
+          <h2 className="text-lg font-semibold mb-4 text-foreground">Savings & Subscriptions</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SavingsJarCard />
+            <SubscriptionTrackerCard />
           </div>
         </section>
 

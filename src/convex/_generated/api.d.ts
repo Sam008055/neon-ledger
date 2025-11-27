@@ -19,6 +19,7 @@ import type * as budget from "../budget.js";
 import type * as challenges from "../challenges.js";
 import type * as http from "../http.js";
 import type * as lessons from "../lessons.js";
+import type * as mockData from "../mockData.js";
 import type * as moodTracking from "../moodTracking.js";
 import type * as savingsJars from "../savingsJars.js";
 import type * as selfCare from "../selfCare.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   challenges: typeof challenges;
   http: typeof http;
   lessons: typeof lessons;
+  mockData: typeof mockData;
   moodTracking: typeof moodTracking;
   savingsJars: typeof savingsJars;
   selfCare: typeof selfCare;

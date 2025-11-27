@@ -26,7 +26,8 @@ export default function DashboardOverview() {
   const goals = useQuery(api.budget.getGoals);
   const achievements = useQuery(api.budget.getAchievements);
   const progress = useQuery(api.budget.getUserProgress);
-  const seedData = useMutation(api.budget.seedData);
+  const seedMockData = useMutation(api.mockData.seedAllMockData);
+  const clearAllData = useMutation(api.mockData.clearAllData);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -34,12 +35,21 @@ export default function DashboardOverview() {
     }
   }, [isLoading, isAuthenticated, navigate]);
 
-  const handleSeedData = async () => {
+  const handleSeedMockData = async () => {
     try {
-      await seedData({});
-      toast.success("Sample data created!");
+      await seedMockData({});
+      toast.success("🎉 Mock data created! Explore all features now!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to seed data");
+    }
+  };
+
+  const handleClearAllData = async () => {
+    try {
+      await clearAllData({});
+      toast.success("🗑️ All data cleared successfully!");
     } catch (error) {
-      toast.error("Failed to seed data");
+      toast.error("Failed to clear data");
     }
   };
 
@@ -109,18 +119,39 @@ export default function DashboardOverview() {
           <StatsCards dashboardData={dashboardData} />
         </section>
 
-        {/* Quick Actions */}
-        {(!accounts || accounts.length === 0) && (
+        {/* Mock Data Controls */}
+        {(!accounts || accounts.length === 0) ? (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
             <CardHeader>
-              <CardTitle>Get Started</CardTitle>
-              <CardDescription>Create sample data to explore the application</CardDescription>
+              <CardTitle>🎮 Get Started with Mock Data</CardTitle>
+              <CardDescription>Generate sample data to explore all features of Neon Ledger!</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleSeedData} className="w-full" size="lg">
+              <Button onClick={handleSeedMockData} className="w-full" size="lg">
                 <Plus className="mr-2 h-4 w-4" />
-                Generate Sample Data
+                Generate Complete Mock Data
               </Button>
+              <p className="text-xs text-muted-foreground mt-3 text-center">
+                Includes: Accounts, Transactions, Goals, Savings Jars, Mood Logs, Subscriptions & More!
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-destructive/30 bg-gradient-to-br from-destructive/5 to-destructive/10">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-sm">Clear All Data</h4>
+                  <p className="text-xs text-muted-foreground">Remove all mock data in one click</p>
+                </div>
+                <Button 
+                  onClick={handleClearAllData} 
+                  variant="destructive" 
+                  size="sm"
+                >
+                  🗑️ Clear Everything
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}

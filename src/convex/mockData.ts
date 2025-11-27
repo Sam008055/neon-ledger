@@ -12,17 +12,22 @@ async function getUserId(ctx: any) {
 export const seedAllMockData = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
-    
-    // Check if data already exists
-    const existingAccounts = await ctx.db
-      .query("accounts")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-    
-    if (existingAccounts) {
-      return { success: false, message: "Mock data already exists. Clear it first!" };
-    }
+    try {
+      const userId = await getUserId(ctx);
+      console.log("User ID:", userId);
+      
+      // Check if data already exists
+      const existingAccounts = await ctx.db
+        .query("accounts")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+      
+      if (existingAccounts) {
+        console.log("Mock data already exists");
+        return { success: false, message: "Mock data already exists. Clear it first!" };
+      }
+      
+      console.log("Creating mock data...");
 
     // Create Accounts
     const checkingId = await ctx.db.insert("accounts", {
@@ -329,7 +334,12 @@ export const seedAllMockData = mutation({
       }
     }
 
-    return { success: true, message: "Mock data created successfully!" };
+      console.log("Mock data creation complete");
+      return { success: true, message: "Mock data created successfully!" };
+    } catch (error: any) {
+      console.error("Error in seedAllMockData:", error);
+      return { success: false, message: error.message || "Failed to create mock data" };
+    }
   },
 });
 
@@ -337,49 +347,58 @@ export const seedAllMockData = mutation({
 export const clearAllData = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
-    
-    // Delete all user data
-    const tables = [
-      "transactions",
-      "accounts",
-      "categories",
-      "goals",
-      "achievements",
-      "savingsJars",
-      "moodLogs",
-      "bankConnections",
-      "userLessons",
-      "challenges",
-    ];
-    
-    for (const table of tables) {
-      const items = await ctx.db
-        .query(table as any)
-        .withIndex("by_user", (q) => q.eq("userId", userId))
-        .collect();
+    try {
+      const userId = await getUserId(ctx);
+      console.log("Clearing data for user:", userId);
       
-      for (const item of items) {
-        await ctx.db.delete(item._id);
+      // Delete all user data
+      const tables = [
+        "transactions",
+        "accounts",
+        "categories",
+        "goals",
+        "achievements",
+        "savingsJars",
+        "moodLogs",
+        "bankConnections",
+        "userLessons",
+        "challenges",
+      ];
+      
+      for (const table of tables) {
+        const items = await ctx.db
+          .query(table as any)
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .collect();
+        
+        console.log(`Deleting ${items.length} items from ${table}`);
+        for (const item of items) {
+          await ctx.db.delete(item._id);
+        }
       }
+      
+      // Reset user progress
+      const progress = await ctx.db
+        .query("userProgress")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+      
+      if (progress) {
+        console.log("Resetting user progress");
+        await ctx.db.patch(progress._id, {
+          totalPoints: 0,
+          level: 1,
+          transactionCount: 0,
+          savingsStreak: 0,
+          lastActivityDate: Date.now(),
+        });
+      }
+      
+      console.log("Data clear complete");
+      return { success: true, message: "All data cleared successfully!" };
+    } catch (error: any) {
+      console.error("Error in clearAllData:", error);
+      return { success: false, message: error.message || "Failed to clear data" };
     }
-    
-    // Reset user progress
-    const progress = await ctx.db
-      .query("userProgress")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-    
-    if (progress) {
-      await ctx.db.patch(progress._id, {
-        totalPoints: 0,
-        level: 1,
-        transactionCount: 0,
-        savingsStreak: 0,
-        lastActivityDate: Date.now(),
-      });
-    }
-    
-    return { success: true, message: "All data cleared successfully!" };
   },
 });

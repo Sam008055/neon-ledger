@@ -37,24 +37,33 @@ export default function DashboardOverview() {
 
   const handleSeedMockData = async () => {
     try {
+      console.log("Starting mock data generation...");
       const result = await seedMockData({});
-      if (result.success) {
+      console.log("Mock data result:", result);
+      if (result?.success) {
         toast.success("🎉 Mock data created! Explore all features now!");
       } else {
-        toast.error(result.message || "Failed to seed data");
+        toast.error(result?.message || "Failed to seed data");
       }
     } catch (error: any) {
       console.error("Mock data error:", error);
-      toast.error(error.message || "Failed to seed data. Check console for details.");
+      toast.error(error?.message || "Failed to seed data. Check console for details.");
     }
   };
 
   const handleClearAllData = async () => {
     try {
-      await clearAllData({});
-      toast.success("🗑️ All data cleared successfully!");
-    } catch (error) {
-      toast.error("Failed to clear data");
+      console.log("Starting data clear...");
+      const result = await clearAllData({});
+      console.log("Clear data result:", result);
+      if (result?.success) {
+        toast.success("🗑️ All data cleared successfully!");
+      } else {
+        toast.error(result?.message || "Failed to clear data");
+      }
+    } catch (error: any) {
+      console.error("Clear data error:", error);
+      toast.error(error?.message || "Failed to clear data. Check console for details.");
     }
   };
 

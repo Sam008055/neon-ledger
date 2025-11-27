@@ -58,6 +58,34 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_account", ["accountId"])
       .index("by_user_and_date", ["userId", "date"]),
+
+    goals: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      targetAmount: v.number(),
+      currentAmount: v.number(),
+      deadline: v.number(), // timestamp
+      status: v.string(), // 'active', 'completed', 'failed'
+      category: v.optional(v.string()),
+    }).index("by_user", ["userId"]),
+
+    achievements: defineTable({
+      userId: v.id("users"),
+      type: v.string(), // 'first_transaction', 'savings_streak', 'budget_master', etc.
+      title: v.string(),
+      description: v.string(),
+      unlockedAt: v.number(), // timestamp
+      points: v.number(),
+    }).index("by_user", ["userId"]),
+
+    userProgress: defineTable({
+      userId: v.id("users"),
+      totalPoints: v.number(),
+      level: v.number(),
+      savingsStreak: v.number(), // consecutive months with positive savings
+      transactionCount: v.number(),
+      lastActivityDate: v.number(),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,

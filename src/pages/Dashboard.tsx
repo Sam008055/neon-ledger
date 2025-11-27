@@ -19,6 +19,8 @@ import { SpendingChart } from "@/components/dashboard/SpendingChart";
 import { BankConnectionCard } from "@/components/dashboard/BankConnectionCard";
 import { AIChatbot } from "@/components/dashboard/AIChatbot";
 import { FinancialPlanner } from "@/components/dashboard/FinancialPlanner";
+import { GoalsCard } from "@/components/dashboard/GoalsCard";
+import { AchievementsCard } from "@/components/dashboard/AchievementsCard";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -164,16 +166,20 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-primary/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-primary/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <LogoDropdown />
-            <h1 className="text-2xl font-bold tracking-tight text-primary">NEON LEDGER</h1>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-primary">NEON LEDGER</h1>
+              <p className="text-xs text-muted-foreground">Financial Management System</p>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            Welcome, <span className="text-secondary">{user.name || user.email || "Guest"}</span>
+          <div className="text-sm">
+            <p className="text-muted-foreground">Welcome back,</p>
+            <p className="font-semibold text-secondary">{user.name || user.email || "Guest"}</p>
           </div>
         </div>
       </header>
@@ -183,19 +189,23 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="space-y-8"
         >
           {/* Dashboard Stats */}
-          <StatsCards dashboardData={dashboardData} />
+          <section>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Financial Overview</h2>
+            <StatsCards dashboardData={dashboardData} />
+          </section>
 
           {/* Quick Actions */}
           {(!accounts || accounts.length === 0) && (
-            <Card className="my-8 border-primary/30">
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
               <CardHeader>
                 <CardTitle>Get Started</CardTitle>
-                <CardDescription>Create sample data to explore the app</CardDescription>
+                <CardDescription>Create sample data to explore the application</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button onClick={handleSeedData} className="w-full">
+                <Button onClick={handleSeedData} className="w-full" size="lg">
                   <Plus className="mr-2 h-4 w-4" />
                   Generate Sample Data
                 </Button>
@@ -203,59 +213,158 @@ export default function Dashboard() {
             </Card>
           )}
 
+          {/* Goals and Achievements Section */}
+          <section>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Goals & Achievements</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <GoalsCard />
+              <AchievementsCard />
+            </div>
+          </section>
+
           {/* AI Assistant and Financial Planner Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
-            <AIChatbot dashboardData={dashboardData} />
-            <FinancialPlanner dashboardData={dashboardData} />
-          </div>
+          <section>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Financial Intelligence</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AIChatbot dashboardData={dashboardData} />
+              <FinancialPlanner dashboardData={dashboardData} />
+            </div>
+          </section>
 
           {/* Insights and Visualization Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
-            <InsightsCard dashboardData={dashboardData} />
-            <BankConnectionCard />
-          </div>
+          <section>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Insights & Analytics</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <InsightsCard dashboardData={dashboardData} />
+              <BankConnectionCard />
+            </div>
+          </section>
 
           {/* Spending Chart */}
           {dashboardData && dashboardData.categoryBreakdown.length > 0 && (
-            <div className="mb-8">
+            <section>
+              <h2 className="text-lg font-semibold mb-4 text-foreground">Spending Analysis</h2>
               <SpendingChart categoryBreakdown={dashboardData.categoryBreakdown} />
-            </div>
+            </section>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Accounts */}
-            <Card className="border-primary/30">
+          {/* Accounts and Categories Management */}
+          <section>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Account Management</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Accounts */}
+              <Card className="border-primary/30">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Accounts</CardTitle>
+                    <Button size="sm" onClick={() => {
+                      setEditingAccount(null);
+                      setAccountForm({ name: "", type: "bank", initialBalance: 0 });
+                      setAccountDialogOpen(true);
+                    }}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {accounts && accounts.length > 0 ? (
+                    <div className="space-y-2">
+                      {dashboardData?.accountBalances.map((acc) => (
+                        <div key={acc._id} className="flex items-center justify-between p-3 border border-border rounded-md">
+                          <div>
+                            <div className="font-medium">{acc.name}</div>
+                            <div className="text-sm text-muted-foreground capitalize">{acc.type}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-primary">₹{acc.balance.toFixed(2)}</span>
+                            <Button size="icon" variant="ghost" onClick={() => {
+                              setEditingAccount(acc._id);
+                              setAccountForm({ name: acc.name, type: acc.type, initialBalance: acc.initialBalance });
+                              setAccountDialogOpen(true);
+                            }}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={() => handleDeleteAccount(acc._id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No accounts yet</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Categories */}
+              <Card className="border-secondary/30">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Categories</CardTitle>
+                    <Button size="sm" onClick={() => setCategoryDialogOpen(true)}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {categories && categories.length > 0 ? (
+                    <div className="space-y-2">
+                      {categories.map((cat) => (
+                        <div key={cat._id} className="flex items-center justify-between p-3 border border-border rounded-md">
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color || "#00ffff" }} />
+                            <div>
+                              <div className="font-medium">{cat.name}</div>
+                              <div className="text-sm text-muted-foreground capitalize">{cat.type}</div>
+                            </div>
+                          </div>
+                          <Button size="icon" variant="ghost" onClick={() => handleDeleteCategory(cat._id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No categories yet</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* Recent Transactions */}
+          <section>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Transaction History</h2>
+            <Card className="border-accent/30">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Accounts</CardTitle>
-                  <Button size="sm" onClick={() => {
-                    setEditingAccount(null);
-                    setAccountForm({ name: "", type: "bank", initialBalance: 0 });
-                    setAccountDialogOpen(true);
-                  }}>
+                  <CardTitle>Recent Transactions</CardTitle>
+                  <Button size="sm" onClick={() => setTransactionDialogOpen(true)}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                {accounts && accounts.length > 0 ? (
+                {transactions && transactions.length > 0 ? (
                   <div className="space-y-2">
-                    {dashboardData?.accountBalances.map((acc) => (
-                      <div key={acc._id} className="flex items-center justify-between p-3 border border-border rounded-md">
-                        <div>
-                          <div className="font-medium">{acc.name}</div>
-                          <div className="text-sm text-muted-foreground capitalize">{acc.type}</div>
+                    {transactions.slice(0, 10).map((txn) => (
+                      <div key={txn._id} className="flex items-center justify-between p-3 border border-border rounded-md">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{txn.category?.name}</span>
+                            <span className="text-xs text-muted-foreground">• {txn.account?.name}</span>
+                          </div>
+                          {txn.note && <div className="text-sm text-muted-foreground">{txn.note}</div>}
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(txn.date).toLocaleDateString()}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-primary">₹{acc.balance.toFixed(2)}</span>
-                          <Button size="icon" variant="ghost" onClick={() => {
-                            setEditingAccount(acc._id);
-                            setAccountForm({ name: acc.name, type: acc.type, initialBalance: acc.initialBalance });
-                            setAccountDialogOpen(true);
-                          }}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => handleDeleteAccount(acc._id)}>
+                          <span className={`font-bold ${txn.type === 'income' ? 'text-accent' : 'text-destructive'}`}>
+                            {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toFixed(2)}
+                          </span>
+                          <Button size="icon" variant="ghost" onClick={() => handleDeleteTransaction(txn._id)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
@@ -263,87 +372,11 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">No accounts yet</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">No transactions yet</p>
                 )}
               </CardContent>
             </Card>
-
-            {/* Categories */}
-            <Card className="border-secondary/30">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Categories</CardTitle>
-                  <Button size="sm" onClick={() => setCategoryDialogOpen(true)}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {categories && categories.length > 0 ? (
-                  <div className="space-y-2">
-                    {categories.map((cat) => (
-                      <div key={cat._id} className="flex items-center justify-between p-3 border border-border rounded-md">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color || "#00ffff" }} />
-                          <div>
-                            <div className="font-medium">{cat.name}</div>
-                            <div className="text-sm text-muted-foreground capitalize">{cat.type}</div>
-                          </div>
-                        </div>
-                        <Button size="icon" variant="ghost" onClick={() => handleDeleteCategory(cat._id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">No categories yet</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Transactions */}
-          <Card className="mt-8 border-accent/30">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Recent Transactions</CardTitle>
-                <Button size="sm" onClick={() => setTransactionDialogOpen(true)}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {transactions && transactions.length > 0 ? (
-                <div className="space-y-2">
-                  {transactions.slice(0, 10).map((txn) => (
-                    <div key={txn._id} className="flex items-center justify-between p-3 border border-border rounded-md">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{txn.category?.name}</span>
-                          <span className="text-xs text-muted-foreground">• {txn.account?.name}</span>
-                        </div>
-                        {txn.note && <div className="text-sm text-muted-foreground">{txn.note}</div>}
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(txn.date).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`font-bold ${txn.type === 'income' ? 'text-accent' : 'text-destructive'}`}>
-                          {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toFixed(2)}
-                        </span>
-                        <Button size="icon" variant="ghost" onClick={() => handleDeleteTransaction(txn._id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No transactions yet</p>
-              )}
-            </CardContent>
-          </Card>
+          </section>
         </motion.div>
       </div>
 

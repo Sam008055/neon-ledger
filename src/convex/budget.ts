@@ -109,7 +109,147 @@ export const deleteCategory = mutation({
   },
 });
 
-// --- Transactions ---
+// --- Goals ---
+
+export const getGoals = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    return await ctx.db
+      .query("goals")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+  },
+});
+
+export const createGoal = mutation({
+  args: {
+    name: v.string(),
+    targetAmount: v.number(),
+    deadline: v.number(),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    return await ctx.db.insert("goals", {
+      userId,
+      name: args.name,
+      targetAmount: args.targetAmount,
+      currentAmount: 0,
+      deadline: args.deadline,
+      status: "active",
+      category: args.category,
+    });
+  },
+});
+
+export const updateGoalProgress = mutation({
+  args: {
+    goalId: v.id("goals"),
+    amount: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    const goal = await ctx.db.get(args.goalId);
+    if (!goal || goal.userId !== userId) throw new Error("Unauthorized");
+    
+    const newAmount = goal.currentAmount + args.amount;
+    const status = newAmount >= goal.targetAmount ? "completed" : "active";
+    
+    await ctx.db.patch(args.goalId, {
+      currentAmount: newAmount,
+      status,
+    });
+    
+    // Award achievement if goal completed
+    if (status === "completed") {
+      await ctx.db.insert("achievements", {
+        userId,
+        type: "goal_completed",
+        title: "Goal Achieved!",
+        description: `Completed goal: ${goal.name}`,
+        unlockedAt: Date.now(),
+        points: 100,
+      });
+      
+      // Update user progress
+      const progress = await ctx.db
+        .query("userProgress")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+      
+      if (progress) {
+        await ctx.db.patch(progress._id, {
+          totalPoints: progress.totalPoints + 100,
+        });
+      }
+    }
+  },
+});
+
+export const deleteGoal = mutation({
+  args: { id: v.id("goals") },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    const goal = await ctx.db.get(args.id);
+    if (!goal || goal.userId !== userId) throw new Error("Unauthorized");
+    await ctx.db.delete(args.id);
+  },
+});
+
+// --- Achievements & Progress ---
+
+export const getAchievements = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    return await ctx.db
+      .query("achievements")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+  },
+});
+
+export const getUserProgress = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    const progress = await ctx.db
+      .query("userProgress")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    
+    return progress;
+  },
+});
+
+export const initializeUserProgress = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    
+    // Check if progress already exists
+    const existing = await ctx.db
+      .query("userProgress")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    
+    if (existing) return existing._id;
+    
+    // Create new progress
+    return await ctx.db.insert("userProgress", {
+      userId,
+      totalPoints: 0,
+      level: 1,
+      savingsStreak: 0,
+      transactionCount: 0,
+      lastActivityDate: Date.now(),
+    });
+  },
+});
+
+// --- Transactions (with achievement tracking) ---
 
 export const getTransactions = query({
   args: {},
@@ -119,9 +259,8 @@ export const getTransactions = query({
       .query("transactions")
       .withIndex("by_user_and_date", (q) => q.eq("userId", userId))
       .order("desc")
-      .take(100); // Limit to last 100 for now
+      .take(100);
 
-    // Enrich with category and account info
     const enriched = await Promise.all(
       transactions.map(async (t) => {
         const category = await ctx.db.get(t.categoryId);
@@ -144,7 +283,38 @@ export const createTransaction = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
-    return await ctx.db.insert("transactions", { ...args, userId });
+    const transactionId = await ctx.db.insert("transactions", { ...args, userId });
+    
+    // Update user progress
+    const progress = await ctx.db
+      .query("userProgress")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    
+    if (progress) {
+      const newCount = progress.transactionCount + 1;
+      await ctx.db.patch(progress._id, {
+        transactionCount: newCount,
+        lastActivityDate: Date.now(),
+      });
+      
+      // Award first transaction achievement
+      if (newCount === 1) {
+        await ctx.db.insert("achievements", {
+          userId,
+          type: "first_transaction",
+          title: "First Step!",
+          description: "Recorded your first transaction",
+          unlockedAt: Date.now(),
+          points: 50,
+        });
+        await ctx.db.patch(progress._id, {
+          totalPoints: progress.totalPoints + 50,
+        });
+      }
+    }
+    
+    return transactionId;
   },
 });
 

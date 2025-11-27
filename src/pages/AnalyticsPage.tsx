@@ -2,16 +2,39 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, TrendingUp, BarChart3, PieChart } from "lucide-react";
 import { SpendingChart } from "@/components/dashboard/SpendingChart";
 import { InsightsCard } from "@/components/dashboard/InsightsCard";
+import { SpendingTrendsChart } from "@/components/dashboard/SpendingTrendsChart";
+import { CategoryComparisonChart } from "@/components/dashboard/CategoryComparisonChart";
+import { CashFlowForecast } from "@/components/dashboard/CashFlowForecast";
 
 export default function AnalyticsPage() {
   const { isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const dashboardData = useQuery(api.budget.getDashboardData);
+
+  // Spending Trends state
+  const [trendsPeriod, setTrendsPeriod] = useState("month");
+  const [trendsMonths, setTrendsMonths] = useState(6);
+  const spendingTrends = useQuery(api.budget.getSpendingTrends, {
+    period: trendsPeriod,
+    months: trendsMonths,
+  });
+
+  // Category Comparison state
+  const [comparisonMonths, setComparisonMonths] = useState(6);
+  const categoryComparison = useQuery(api.budget.getCategoryComparison, {
+    months: comparisonMonths,
+  });
+
+  // Cash Flow Forecast state
+  const [forecastMonths, setForecastMonths] = useState(6);
+  const cashFlowForecast = useQuery(api.budget.getCashFlowForecast, {
+    monthsAhead: forecastMonths,
+  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -74,20 +97,58 @@ export default function AnalyticsPage() {
           </div>
         </motion.div>
 
+        {/* Spending Trends Over Time */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <SpendingTrendsChart
+            trends={spendingTrends}
+            onPeriodChange={setTrendsPeriod}
+            onMonthsChange={setTrendsMonths}
+          />
+        </motion.section>
+
+        {/* Category Comparison */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <CategoryComparisonChart
+            comparison={categoryComparison}
+            onMonthsChange={setComparisonMonths}
+          />
+        </motion.section>
+
+        {/* Cash Flow Forecast */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <CashFlowForecast
+            forecastData={cashFlowForecast}
+            onMonthsChange={setForecastMonths}
+          />
+        </motion.section>
+
+        {/* Insights & Current Month Breakdown */}
         <section>
           <motion.h2
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.5 }}
             className="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary"
           >
-            Insights & Visualization
+            Current Month Overview
           </motion.h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.6 }}
             >
               <InsightsCard dashboardData={dashboardData} />
             </motion.div>
@@ -95,7 +156,7 @@ export default function AnalyticsPage() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.7 }}
               >
                 <SpendingChart categoryBreakdown={dashboardData.categoryBreakdown} />
               </motion.div>

@@ -394,6 +394,193 @@ export const getDashboardData = query({
   },
 });
 
+// --- Advanced Analytics ---
+
+export const getSpendingTrends = query({
+  args: {
+    period: v.string(), // "week", "month", "quarter"
+    months: v.number(), // number of periods to show
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    
+    const transactions = await ctx.db
+      .query("transactions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const now = new Date();
+    const trends = [];
+
+    for (let i = args.months - 1; i >= 0; i--) {
+      let periodStart: Date;
+      let periodEnd: Date;
+      let label: string;
+
+      if (args.period === "week") {
+        periodEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+        periodStart = new Date(periodEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
+        label = `Week ${args.months - i}`;
+      } else if (args.period === "quarter") {
+        const quarterMonth = now.getMonth() - (i * 3);
+        periodStart = new Date(now.getFullYear(), quarterMonth, 1);
+        periodEnd = new Date(now.getFullYear(), quarterMonth + 3, 0);
+        label = `Q${Math.floor((periodStart.getMonth() / 3)) + 1} ${periodStart.getFullYear()}`;
+      } else {
+        // month
+        periodStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        periodEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+        label = periodStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      }
+
+      const periodTransactions = transactions.filter(
+        (t) => t.date >= periodStart.getTime() && t.date <= periodEnd.getTime()
+      );
+
+      const income = periodTransactions
+        .filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const expense = periodTransactions
+        .filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      trends.push({
+        period: label,
+        income,
+        expense,
+        net: income - expense,
+      });
+    }
+
+    return trends;
+  },
+});
+
+export const getCategoryComparison = query({
+  args: {
+    months: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    
+    const transactions = await ctx.db
+      .query("transactions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const categories = await ctx.db
+      .query("categories")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const now = new Date();
+    const comparison: Record<string, any> = {};
+
+    categories.forEach((cat) => {
+      comparison[cat.name] = {
+        categoryId: cat._id,
+        color: cat.color || "#00ffff",
+        data: [],
+      };
+    });
+
+    for (let i = args.months - 1; i >= 0; i--) {
+      const periodStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const periodEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const label = periodStart.toLocaleDateString('en-US', { month: 'short' });
+
+      const periodTransactions = transactions.filter(
+        (t) => t.date >= periodStart.getTime() && t.date <= periodEnd.getTime()
+      );
+
+      categories.forEach((cat) => {
+        const amount = periodTransactions
+          .filter((t) => t.categoryId === cat._id)
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        comparison[cat.name].data.push({
+          month: label,
+          amount,
+        });
+      });
+    }
+
+    return comparison;
+  },
+});
+
+export const getCashFlowForecast = query({
+  args: {
+    monthsAhead: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    
+    const transactions = await ctx.db
+      .query("transactions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Calculate historical averages (last 6 months)
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1).getTime();
+    const recentTransactions = transactions.filter((t) => t.date >= sixMonthsAgo);
+
+    const avgMonthlyIncome = recentTransactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0) / 6;
+
+    const avgMonthlyExpense = recentTransactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0) / 6;
+
+    // Get current balance
+    const accounts = await ctx.db
+      .query("accounts")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const accountBalances = accounts.map((acc) => {
+      const accTransactions = transactions.filter((t) => t.accountId === acc._id);
+      const balance = accTransactions.reduce((sum, t) => {
+        return t.type === "income" ? sum + t.amount : sum - t.amount;
+      }, acc.initialBalance);
+      return balance;
+    });
+
+    const currentBalance = accountBalances.reduce((sum, bal) => sum + bal, 0);
+
+    // Generate forecast
+    const forecast = [];
+    let projectedBalance = currentBalance;
+
+    for (let i = 0; i <= args.monthsAhead; i++) {
+      const forecastDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const label = forecastDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      if (i > 0) {
+        projectedBalance += avgMonthlyIncome - avgMonthlyExpense;
+      }
+
+      forecast.push({
+        month: label,
+        projectedBalance,
+        projectedIncome: avgMonthlyIncome,
+        projectedExpense: avgMonthlyExpense,
+        isActual: i === 0,
+      });
+    }
+
+    return {
+      forecast,
+      avgMonthlyIncome,
+      avgMonthlyExpense,
+      avgMonthlySavings: avgMonthlyIncome - avgMonthlyExpense,
+    };
+  },
+});
+
 // --- Receipt Upload ---
 
 export const generateUploadUrl = mutation({

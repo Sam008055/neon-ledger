@@ -10,9 +10,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LogoDropdown } from "@/components/LogoDropdown";
-import { Loader2, Plus, Trash2, Wallet, TrendingUp, TrendingDown, DollarSign, Edit } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
+import { StatsCards } from "@/components/dashboard/StatsCards";
+import { InsightsCard } from "@/components/dashboard/InsightsCard";
+import { SpendingChart } from "@/components/dashboard/SpendingChart";
+import { BankConnectionCard } from "@/components/dashboard/BankConnectionCard";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -179,63 +183,11 @@ export default function Dashboard() {
           transition={{ duration: 0.5 }}
         >
           {/* Dashboard Stats */}
-          {dashboardData && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card className="border-primary/30">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Total Balance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-primary" />
-                    <span className="text-2xl font-bold text-primary">${dashboardData.totalBalance.toFixed(2)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-secondary/30">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Monthly Income</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-accent" />
-                    <span className="text-2xl font-bold text-accent">${dashboardData.income.toFixed(2)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-destructive/30">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Monthly Expense</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="h-5 w-5 text-destructive" />
-                    <span className="text-2xl font-bold text-destructive">${dashboardData.expense.toFixed(2)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-accent/30">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Net Flow</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Wallet className="h-5 w-5 text-secondary" />
-                    <span className={`text-2xl font-bold ${dashboardData.net >= 0 ? 'text-accent' : 'text-destructive'}`}>
-                      ${dashboardData.net.toFixed(2)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          <StatsCards dashboardData={dashboardData} />
 
           {/* Quick Actions */}
           {(!accounts || accounts.length === 0) && (
-            <Card className="mb-8 border-primary/30">
+            <Card className="my-8 border-primary/30">
               <CardHeader>
                 <CardTitle>Get Started</CardTitle>
                 <CardDescription>Create sample data to explore the app</CardDescription>
@@ -247,6 +199,19 @@ export default function Dashboard() {
                 </Button>
               </CardContent>
             </Card>
+          )}
+
+          {/* Insights and Visualization Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
+            <InsightsCard dashboardData={dashboardData} />
+            <BankConnectionCard />
+          </div>
+
+          {/* Spending Chart */}
+          {dashboardData && dashboardData.categoryBreakdown.length > 0 && (
+            <div className="mb-8">
+              <SpendingChart categoryBreakdown={dashboardData.categoryBreakdown} />
+            </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -34,65 +34,141 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
 
   const generateAIResponse = (userMessage: string): string => {
     if (!dashboardData) {
-      return "I need your financial data to provide insights. Please make sure you have some transactions recorded.";
+      return "I need your financial data to provide insights. Please make sure you have some accounts and transactions recorded.";
     }
 
     const lowerMessage = userMessage.toLowerCase();
 
-    // Spending analysis
-    if (lowerMessage.includes("spending") || lowerMessage.includes("spend")) {
-      const topCategory = dashboardData.categoryBreakdown.length > 0
-        ? dashboardData.categoryBreakdown.reduce((max, cat) => cat.amount > max.amount ? cat : max)
-        : null;
-      
-      if (topCategory) {
-        return `Your biggest spending category is ${topCategory.name} at ₹${topCategory.amount.toFixed(2)}. Consider setting a budget limit for this category to control expenses.`;
+    // Comprehensive spending analysis
+    if (lowerMessage.includes("spending") || lowerMessage.includes("spend") || lowerMessage.includes("expense")) {
+      if (dashboardData.categoryBreakdown.length === 0) {
+        return "You don't have any spending data yet. Start recording transactions to get detailed insights!";
       }
-      return "You don't have any spending data yet. Start recording transactions to get insights!";
+
+      const topCategory = dashboardData.categoryBreakdown.reduce((max, cat) => cat.amount > max.amount ? cat : max);
+      const totalSpending = dashboardData.categoryBreakdown.reduce((sum, cat) => sum + cat.amount, 0);
+      const topPercentage = ((topCategory.amount / totalSpending) * 100).toFixed(1);
+      
+      let analysis = `Based on your data, you've spent ₹${dashboardData.expense.toFixed(2)} this month. `;
+      analysis += `Your largest expense is ${topCategory.name} at ₹${topCategory.amount.toFixed(2)} (${topPercentage}% of total spending). `;
+      
+      if (dashboardData.categoryBreakdown.length > 1) {
+        const secondCategory = dashboardData.categoryBreakdown.sort((a, b) => b.amount - a.amount)[1];
+        analysis += `Your second highest expense is ${secondCategory.name} at ₹${secondCategory.amount.toFixed(2)}. `;
+      }
+      
+      if (parseFloat(topPercentage) > 40) {
+        analysis += `⚠️ ${topCategory.name} represents a significant portion of your spending. Consider reviewing if this aligns with your priorities.`;
+      }
+      
+      return analysis;
     }
 
-    // Savings analysis
+    // Detailed savings analysis
     if (lowerMessage.includes("save") || lowerMessage.includes("saving")) {
-      const savingsRate = dashboardData.income > 0 
-        ? ((dashboardData.net / dashboardData.income) * 100).toFixed(1)
-        : "0";
-      
-      if (parseFloat(savingsRate) < 20) {
-        return `Your current savings rate is ${savingsRate}%. Financial experts recommend saving at least 20% of your income. Try reducing discretionary spending to increase your savings.`;
+      if (dashboardData.income === 0) {
+        return "I don't see any income recorded yet. Add income transactions to analyze your savings potential.";
       }
-      return `Great job! You're saving ${savingsRate}% of your income. Keep up the good work!`;
+
+      const savingsRate = ((dashboardData.net / dashboardData.income) * 100).toFixed(1);
+      const monthlySavings = dashboardData.net;
+      
+      let analysis = `Your current savings rate is ${savingsRate}%. `;
+      
+      if (monthlySavings < 0) {
+        analysis += `You're currently spending ₹${Math.abs(monthlySavings).toFixed(2)} more than you earn. `;
+        analysis += `To start saving, you need to reduce expenses by at least ₹${Math.abs(monthlySavings).toFixed(2)} per month. `;
+        
+        if (dashboardData.categoryBreakdown.length > 0) {
+          const topCategory = dashboardData.categoryBreakdown.reduce((max, cat) => cat.amount > max.amount ? cat : max);
+          analysis += `Start by reviewing your ${topCategory.name} expenses.`;
+        }
+      } else if (parseFloat(savingsRate) < 10) {
+        analysis += `This is below the recommended minimum of 10%. Try to increase your savings by ₹${(dashboardData.income * 0.1 - monthlySavings).toFixed(2)} per month to reach 10%.`;
+      } else if (parseFloat(savingsRate) < 20) {
+        analysis += `You're on the right track! Financial experts recommend 20%. Increase savings by ₹${(dashboardData.income * 0.2 - monthlySavings).toFixed(2)} to reach this goal.`;
+      } else {
+        analysis += `Excellent! You're exceeding the recommended 20% savings rate. At this rate, you'll save ₹${(monthlySavings * 12).toFixed(2)} annually.`;
+      }
+      
+      return analysis;
     }
 
-    // Budget advice
-    if (lowerMessage.includes("budget") || lowerMessage.includes("improve")) {
-      const suggestions = [];
+    // Comprehensive budget advice
+    if (lowerMessage.includes("budget") || lowerMessage.includes("improve") || lowerMessage.includes("advice")) {
+      let advice = "📊 Financial Analysis & Recommendations:\n\n";
       
+      // Income vs Expense analysis
       if (dashboardData.net < 0) {
-        suggestions.push("You're spending more than you earn. Review your expenses and cut non-essential items.");
+        advice += `🔴 You're spending ₹${Math.abs(dashboardData.net).toFixed(2)} more than you earn. This is unsustainable. `;
+        advice += `Immediate action needed: reduce expenses or increase income.\n\n`;
+      } else if (dashboardData.net > 0) {
+        const savingsRate = ((dashboardData.net / dashboardData.income) * 100).toFixed(1);
+        advice += `🟢 Positive cash flow of ₹${dashboardData.net.toFixed(2)} (${savingsRate}% savings rate).\n\n`;
       }
       
+      // Category-specific advice
       if (dashboardData.categoryBreakdown.length > 0) {
-        const topSpending = dashboardData.categoryBreakdown[0];
-        suggestions.push(`Focus on reducing ${topSpending.name} expenses, which is your highest spending category.`);
+        const sortedCategories = [...dashboardData.categoryBreakdown].sort((a, b) => b.amount - a.amount);
+        advice += `💰 Top spending categories:\n`;
+        sortedCategories.slice(0, 3).forEach((cat, idx) => {
+          const percentage = ((cat.amount / dashboardData.expense) * 100).toFixed(1);
+          advice += `${idx + 1}. ${cat.name}: ₹${cat.amount.toFixed(2)} (${percentage}%)\n`;
+        });
+        advice += `\n`;
       }
       
-      suggestions.push("Follow the 50/30/20 rule: 50% needs, 30% wants, 20% savings.");
+      // 50/30/20 rule guidance
+      const needs = dashboardData.income * 0.5;
+      const wants = dashboardData.income * 0.3;
+      const savings = dashboardData.income * 0.2;
       
-      return suggestions.join(" ");
+      advice += `📈 Recommended budget (50/30/20 rule):\n`;
+      advice += `• Needs (50%): ₹${needs.toFixed(2)}\n`;
+      advice += `• Wants (30%): ₹${wants.toFixed(2)}\n`;
+      advice += `• Savings (20%): ₹${savings.toFixed(2)}\n`;
+      
+      return advice;
     }
 
     // Income analysis
     if (lowerMessage.includes("income")) {
-      return `Your monthly income is ₹${dashboardData.income.toFixed(2)}. Your expenses are ₹${dashboardData.expense.toFixed(2)}, leaving you with a net flow of ₹${dashboardData.net.toFixed(2)}.`;
+      if (dashboardData.income === 0) {
+        return "No income recorded this month. Add your income transactions to track your earnings.";
+      }
+      
+      let analysis = `Your monthly income is ₹${dashboardData.income.toFixed(2)}. `;
+      analysis += `After expenses of ₹${dashboardData.expense.toFixed(2)}, your net cash flow is ₹${dashboardData.net.toFixed(2)}. `;
+      
+      if (dashboardData.net > 0) {
+        const yearlySavings = dashboardData.net * 12;
+        analysis += `If you maintain this, you'll save ₹${yearlySavings.toFixed(2)} annually.`;
+      } else {
+        analysis += `You need to reduce expenses by ₹${Math.abs(dashboardData.net).toFixed(2)} to break even.`;
+      }
+      
+      return analysis;
     }
 
     // Balance inquiry
-    if (lowerMessage.includes("balance")) {
-      return `Your total balance across all accounts is ₹${dashboardData.totalBalance.toFixed(2)}.`;
+    if (lowerMessage.includes("balance") || lowerMessage.includes("total")) {
+      let analysis = `Your total balance across all accounts is ₹${dashboardData.totalBalance.toFixed(2)}. `;
+      
+      if (dashboardData.net > 0) {
+        const monthsOfExpenses = dashboardData.expense > 0 ? (dashboardData.totalBalance / dashboardData.expense).toFixed(1) : "N/A";
+        analysis += `This covers approximately ${monthsOfExpenses} months of expenses at your current rate.`;
+      }
+      
+      return analysis;
     }
 
-    // Default response
-    return "I can help you with spending analysis, savings tips, budget advice, and financial planning. Try asking about your spending, savings rate, or how to improve your budget!";
+    // Help/capabilities
+    if (lowerMessage.includes("help") || lowerMessage.includes("what can you")) {
+      return "I can analyze your financial data and provide insights on:\n• Spending patterns and top expenses\n• Savings rate and recommendations\n• Budget advice and the 50/30/20 rule\n• Income vs expense analysis\n• Account balance overview\n\nJust ask me about any of these topics!";
+    }
+
+    // Default intelligent response
+    return "I'm your AI financial analyst. I can provide detailed insights about your spending, savings, budget, income, and balance. What would you like to know about your finances?";
   };
 
   const handleSend = () => {

@@ -32,12 +32,32 @@ const schema = defineSchema(
       role: v.optional(roleValidator), // role of the user. do not remove
     }).index("email", ["email"]), // index for the email. do not remove or modify
 
-    // add other tables here
+    accounts: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      type: v.string(), // 'bank', 'cash', 'credit', etc.
+      initialBalance: v.number(),
+    }).index("by_user", ["userId"]),
 
-    // tableName: defineTable({
-    //   ...
-    //   // table fields
-    // }).index("by_field", ["field"])
+    categories: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      type: v.string(), // 'income', 'expense'
+      color: v.optional(v.string()),
+    }).index("by_user", ["userId"]),
+
+    transactions: defineTable({
+      userId: v.id("users"),
+      accountId: v.id("accounts"),
+      categoryId: v.id("categories"),
+      amount: v.number(),
+      type: v.string(), // 'income', 'expense'
+      date: v.number(), // timestamp
+      note: v.optional(v.string()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_account", ["accountId"])
+      .index("by_user_and_date", ["userId", "date"]),
   },
   {
     schemaValidation: false,

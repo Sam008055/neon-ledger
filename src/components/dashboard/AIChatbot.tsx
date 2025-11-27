@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2 } from "lucide-react";
+import { Bot, Send, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -216,33 +216,56 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
   };
 
   return (
-    <Card className="border-accent/30 h-[500px] flex flex-col">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-accent" />
-          <CardTitle>AI Financial Assistant</CardTitle>
+    <Card className="border-2 border-accent/30 bg-gradient-to-br from-card/90 to-card/50 backdrop-blur-sm shadow-2xl shadow-accent/10 h-[600px] flex flex-col overflow-hidden">
+      <CardHeader className="border-b border-accent/20 bg-gradient-to-r from-accent/10 to-primary/10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="p-2 rounded-xl bg-gradient-to-br from-accent to-primary shadow-lg"
+            >
+              <Bot className="h-6 w-6 text-white" />
+            </motion.div>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                AI Financial Assistant
+                <Sparkles className="h-4 w-4 text-accent animate-pulse" />
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Powered by intelligent analysis</p>
+            </div>
+          </div>
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-2 h-2 rounded-full bg-accent"
+          />
         </div>
       </CardHeader>
+      
       <CardContent className="flex-1 flex flex-col gap-4 p-0">
-        <ScrollArea className="flex-1 px-6">
+        <ScrollArea className="flex-1 px-6 pt-4">
           <div className="space-y-4 pb-4">
             <AnimatePresence>
               {messages.map((message, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className={`max-w-[80%] p-4 rounded-2xl backdrop-blur-sm border-2 ${
                       message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                        ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary/30 shadow-lg shadow-primary/20"
+                        : "bg-gradient-to-br from-muted/80 to-muted/40 border-accent/20 shadow-lg shadow-accent/10"
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
-                  </div>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  </motion.div>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -252,14 +275,15 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
                 animate={{ opacity: 1 }}
                 className="flex justify-start"
               >
-                <div className="bg-muted p-3 rounded-lg">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="bg-gradient-to-br from-muted/80 to-muted/40 p-4 rounded-2xl border-2 border-accent/20 backdrop-blur-sm">
+                  <Loader2 className="h-5 w-5 animate-spin text-accent" />
                 </div>
               </motion.div>
             )}
           </div>
         </ScrollArea>
-        <div className="px-6 pb-6">
+        
+        <div className="px-6 pb-6 border-t border-accent/20 pt-4 bg-gradient-to-t from-card/50 to-transparent">
           <div className="flex gap-2">
             <Input
               value={input}
@@ -267,10 +291,17 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Ask about your finances..."
               disabled={isLoading}
+              className="border-2 border-accent/30 bg-card/50 backdrop-blur-sm focus:border-accent focus:ring-accent"
             />
-            <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                onClick={handleSend} 
+                disabled={isLoading || !input.trim()}
+                className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-lg shadow-accent/20"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </motion.div>
           </div>
         </div>
       </CardContent>

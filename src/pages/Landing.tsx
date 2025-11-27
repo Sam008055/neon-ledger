@@ -191,6 +191,62 @@ export default function Landing() {
                   Earn achievements and track your financial progress with engaging rewards.
                 </p>
               </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
+                viewport={{ once: true }}
+                className="p-6 border border-primary/30 rounded-lg bg-card/50 backdrop-blur-sm hover:border-primary/60 transition-all hover:shadow-lg hover:shadow-primary/20"
+              >
+                <Shield className="h-10 w-10 text-primary mb-4" />
+                <h3 className="text-xl font-bold mb-2">Budget Alerts</h3>
+                <p className="text-muted-foreground">
+                  Set budget limits and get notified when approaching or exceeding them.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+                viewport={{ once: true }}
+                className="p-6 border border-accent/30 rounded-lg bg-card/50 backdrop-blur-sm hover:border-accent/60 transition-all hover:shadow-lg hover:shadow-accent/20"
+              >
+                <TrendingUp className="h-10 w-10 text-accent mb-4" />
+                <h3 className="text-xl font-bold mb-2">Multi-Currency</h3>
+                <p className="text-muted-foreground">
+                  Track accounts in different currencies with automatic conversion support.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.0 }}
+                viewport={{ once: true }}
+                className="p-6 border border-secondary/30 rounded-lg bg-card/50 backdrop-blur-sm hover:border-secondary/60 transition-all hover:shadow-lg hover:shadow-secondary/20"
+              >
+                <Zap className="h-10 w-10 text-secondary mb-4" />
+                <h3 className="text-xl font-bold mb-2">Recurring Transactions</h3>
+                <p className="text-muted-foreground">
+                  Automate recurring income and expenses like salary and subscriptions.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.1 }}
+                viewport={{ once: true }}
+                className="p-6 border border-primary/30 rounded-lg bg-card/50 backdrop-blur-sm hover:border-primary/60 transition-all hover:shadow-lg hover:shadow-primary/20"
+              >
+                <Sparkles className="h-10 w-10 text-primary mb-4" />
+                <h3 className="text-xl font-bold mb-2">Export & Import</h3>
+                <p className="text-muted-foreground">
+                  Export data to CSV/Excel or import from other budgeting apps seamlessly.
+                </p>
+              </motion.div>
             </div>
           </motion.div>
         </div>

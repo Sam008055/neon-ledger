@@ -146,4 +146,20 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--secondary);
   }
+
+  /* Hide scrollbar for mobile navigation */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    body {
+      font-size: 14px;
+    }
+  }
 }

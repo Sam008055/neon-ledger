@@ -54,6 +54,7 @@ const schema = defineSchema(
       type: v.string(), // 'income', 'expense'
       date: v.number(), // timestamp
       note: v.optional(v.string()),
+      receiptId: v.optional(v.id("_storage")), // File storage ID for receipt
     })
       .index("by_user", ["userId"])
       .index("by_account", ["accountId"])

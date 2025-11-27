@@ -2,16 +2,17 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, Edit, Search, Filter, X } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit, Search, Filter, X, Upload, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
+import { ReceiptViewer } from "@/components/ReceiptViewer";
 
 export default function AccountsPage() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -29,6 +30,7 @@ export default function AccountsPage() {
   const deleteCategory = useMutation(api.budget.deleteCategory);
   const createTransaction = useMutation(api.budget.createTransaction);
   const deleteTransaction = useMutation(api.budget.deleteTransaction);
+  const generateUploadUrl = useMutation(api.budget.generateUploadUrl);
 
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Id<"accounts"> | null>(null);
@@ -44,8 +46,13 @@ export default function AccountsPage() {
     amount: 0,
     type: "expense",
     date: new Date().toISOString().split('T')[0],
-    note: ""
+    note: "",
+    receiptId: undefined as Id<"_storage"> | undefined
   });
+
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -173,6 +180,32 @@ export default function AccountsPage() {
     }
   };
 
+  const handleReceiptUpload = async (file: File) => {
+    try {
+      setUploadingReceipt(true);
+      
+      // Generate upload URL
+      const uploadUrl = await generateUploadUrl();
+      
+      // Upload the file
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      
+      const { storageId } = await result.json();
+      
+      setTransactionForm({ ...transactionForm, receiptId: storageId });
+      setReceiptFile(file);
+      toast.success("Receipt uploaded successfully!");
+    } catch (error) {
+      toast.error("Failed to upload receipt");
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
   const handleCreateTransaction = async () => {
     try {
       await createTransaction({
@@ -181,7 +214,8 @@ export default function AccountsPage() {
         amount: transactionForm.amount,
         type: transactionForm.type,
         date: new Date(transactionForm.date).getTime(),
-        note: transactionForm.note || undefined
+        note: transactionForm.note || undefined,
+        receiptId: transactionForm.receiptId
       });
       toast.success("Transaction created!");
       setTransactionDialogOpen(false);
@@ -191,8 +225,10 @@ export default function AccountsPage() {
         amount: 0,
         type: "expense",
         date: new Date().toISOString().split('T')[0],
-        note: ""
+        note: "",
+        receiptId: undefined
       });
+      setReceiptFile(null);
     } catch (error) {
       toast.error("Failed to create transaction");
     }
@@ -444,33 +480,45 @@ export default function AccountsPage() {
             <CardContent>
               {filteredTransactions.length > 0 ? (
                 <div className="space-y-2">
-                  {filteredTransactions.slice(0, 50).map((txn) => (
-                    <motion.div
-                      key={txn._id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center justify-between p-3 border border-border rounded-md hover:border-accent/50 transition-all"
-                    >
-                      <div className="flex-1">
+                  {filteredTransactions.slice(0, 50).map((txn) => {
+                    const receiptUrl = txn.receiptId ? api.budget.getReceiptUrl : null;
+                    
+                    return (
+                      <motion.div
+                        key={txn._id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center justify-between p-3 border border-border rounded-md hover:border-accent/50 transition-all"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{txn.category?.name}</span>
+                            <span className="text-xs text-muted-foreground">• {txn.account?.name}</span>
+                            {txn.receiptId && (
+                              <span title="Has receipt">
+                                <FileText className="h-3 w-3 text-primary" />
+                              </span>
+                            )}
+                          </div>
+                          {txn.note && <div className="text-sm text-muted-foreground">{txn.note}</div>}
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(txn.date).toLocaleDateString()}
+                          </div>
+                        </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{txn.category?.name}</span>
-                          <span className="text-xs text-muted-foreground">• {txn.account?.name}</span>
+                          <span className={`font-bold ${txn.type === 'income' ? 'text-accent' : 'text-destructive'}`}>
+                            {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toFixed(2)}
+                          </span>
+                          {txn.receiptId && (
+                            <ReceiptViewer receiptId={txn.receiptId} />
+                          )}
+                          <Button size="icon" variant="ghost" onClick={() => handleDeleteTransaction(txn._id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
-                        {txn.note && <div className="text-sm text-muted-foreground">{txn.note}</div>}
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(txn.date).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`font-bold ${txn.type === 'income' ? 'text-accent' : 'text-destructive'}`}>
-                          {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toFixed(2)}
-                        </span>
-                        <Button size="icon" variant="ghost" onClick={() => handleDeleteTransaction(txn._id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -643,6 +691,60 @@ export default function AccountsPage() {
                 onChange={(e) => setTransactionForm({ ...transactionForm, note: e.target.value })}
                 placeholder="Add a note..."
               />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Receipt (Optional)</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleReceiptUpload(file);
+                  }
+                }}
+                className="hidden"
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingReceipt}
+                  className="w-full"
+                >
+                  {uploadingReceipt ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      {receiptFile ? "Change Receipt" : "Upload Receipt"}
+                    </>
+                  )}
+                </Button>
+                {receiptFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setReceiptFile(null);
+                      setTransactionForm({ ...transactionForm, receiptId: undefined });
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {receiptFile && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {receiptFile.name}
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>

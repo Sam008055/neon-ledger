@@ -280,6 +280,7 @@ export const createTransaction = mutation({
     type: v.string(),
     date: v.number(),
     note: v.optional(v.string()),
+    receiptId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -390,6 +391,24 @@ export const getDashboardData = query({
       accountBalances,
       categoryBreakdown,
     };
+  },
+});
+
+// --- Receipt Upload ---
+
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await getUserId(ctx); // Ensure authenticated
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const getReceiptUrl = query({
+  args: { storageId: v.id("_storage") },
+  handler: async (ctx, args) => {
+    await getUserId(ctx);
+    return await ctx.storage.getUrl(args.storageId);
   },
 });
 

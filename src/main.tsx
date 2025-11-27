@@ -11,6 +11,12 @@ import "./index.css";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import DashboardOverview from "./pages/DashboardOverview.tsx";
+import AccountsPage from "./pages/AccountsPage.tsx";
+import AnalyticsPage from "./pages/AnalyticsPage.tsx";
+import GoalsPage from "./pages/GoalsPage.tsx";
+import AchievementsPage from "./pages/AchievementsPage.tsx";
+import AIAssistantPage from "./pages/AIAssistantPage.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
@@ -50,7 +56,14 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />}>
+              <Route index element={<DashboardOverview />} />
+              <Route path="accounts" element={<AccountsPage />} />
+              <Route path="analytics" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">Analytics - Coming Soon</h1></div>} />
+              <Route path="goals" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">Goals - Coming Soon</h1></div>} />
+              <Route path="achievements" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">Achievements - Coming Soon</h1></div>} />
+              <Route path="ai-assistant" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">AI Assistant - Coming Soon</h1></div>} />
+            </Route>
             <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

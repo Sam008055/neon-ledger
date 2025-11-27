@@ -1,17 +1,20 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, Outlet } from "react-router";
 import { useEffect } from "react";
-import { Loader2, Trophy, Star } from "lucide-react";
+import { Loader2, Trophy, Star, Moon, Sun } from "lucide-react";
 import { LogoDropdown } from "@/components/LogoDropdown";
 import { Navigation } from "@/components/Navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const progress = useQuery(api.budget.getUserProgress);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -106,6 +109,21 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
+
+              {/* Theme Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="h-10 w-10"
+                title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              >
+                {theme === "light" ? (
+                  <Moon className="h-5 w-5" />
+                ) : (
+                  <Sun className="h-5 w-5" />
+                )}
+              </Button>
             </div>
           </div>
         </div>

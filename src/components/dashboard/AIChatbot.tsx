@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, Send, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -31,6 +31,15 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading]);
 
   const generateAIResponse = (userMessage: string): string => {
     if (!dashboardData) {
@@ -244,7 +253,7 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col gap-4 p-0">
-        <ScrollArea className="flex-1 px-6 pt-4">
+        <ScrollArea className="flex-1 px-6 pt-4" ref={scrollAreaRef}>
           <div className="space-y-4 pb-4">
             <AnimatePresence>
               {messages.map((message, index) => (
@@ -280,6 +289,7 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
                 </div>
               </motion.div>
             )}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
         

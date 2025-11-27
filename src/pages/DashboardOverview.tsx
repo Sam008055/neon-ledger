@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,9 @@ export default function DashboardOverview() {
   const seedMockData = useMutation(api.mockData.seedAllMockData);
   const clearAllData = useMutation(api.mockData.clearAllData);
 
+  const [isSeedingData, setIsSeedingData] = useState(false);
+  const [isClearingData, setIsClearingData] = useState(false);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
@@ -37,6 +40,7 @@ export default function DashboardOverview() {
 
   const handleSeedMockData = async () => {
     try {
+      setIsSeedingData(true);
       console.log("Starting mock data generation...");
       toast.loading("Creating mock data...", { id: "seed-data" });
       const result = await seedMockData({});
@@ -52,11 +56,14 @@ export default function DashboardOverview() {
       console.error("Mock data error:", error);
       const errorMsg = error?.message || "Failed to seed data. Please try again.";
       toast.error(errorMsg, { id: "seed-data" });
+    } finally {
+      setIsSeedingData(false);
     }
   };
 
   const handleClearAllData = async () => {
     try {
+      setIsClearingData(true);
       console.log("Starting data clear...");
       toast.loading("Clearing all data...", { id: "clear-data" });
       const result = await clearAllData({});
@@ -72,6 +79,8 @@ export default function DashboardOverview() {
       console.error("Clear data error:", error);
       const errorMsg = error?.message || "Failed to clear data. Please try again.";
       toast.error(errorMsg, { id: "clear-data" });
+    } finally {
+      setIsClearingData(false);
     }
   };
 
@@ -149,9 +158,23 @@ export default function DashboardOverview() {
               <CardDescription>Generate sample data to explore all features of Neon Ledger!</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleSeedMockData} className="w-full" size="lg">
-                <Plus className="mr-2 h-4 w-4" />
-                Generate Complete Mock Data
+              <Button 
+                onClick={handleSeedMockData} 
+                className="w-full" 
+                size="lg"
+                disabled={isSeedingData}
+              >
+                {isSeedingData ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Generate Complete Mock Data
+                  </>
+                )}
               </Button>
               <p className="text-xs text-muted-foreground mt-3 text-center">
                 Includes: Accounts, Transactions, Goals, Savings Jars, Mood Logs, Subscriptions & More!
@@ -170,8 +193,18 @@ export default function DashboardOverview() {
                   onClick={handleClearAllData} 
                   variant="destructive" 
                   size="sm"
+                  disabled={isClearingData}
                 >
-                  🗑️ Clear Everything
+                  {isClearingData ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Clearing...
+                    </>
+                  ) : (
+                    <>
+                      🗑️ Clear Everything
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>

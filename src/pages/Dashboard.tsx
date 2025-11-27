@@ -17,6 +17,8 @@ import { StatsCards } from "@/components/dashboard/StatsCards";
 import { InsightsCard } from "@/components/dashboard/InsightsCard";
 import { SpendingChart } from "@/components/dashboard/SpendingChart";
 import { BankConnectionCard } from "@/components/dashboard/BankConnectionCard";
+import { AIChatbot } from "@/components/dashboard/AIChatbot";
+import { FinancialPlanner } from "@/components/dashboard/FinancialPlanner";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -200,6 +202,12 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           )}
+
+          {/* AI Assistant and Financial Planner Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
+            <AIChatbot dashboardData={dashboardData} />
+            <FinancialPlanner dashboardData={dashboardData} />
+          </div>
 
           {/* Insights and Visualization Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">

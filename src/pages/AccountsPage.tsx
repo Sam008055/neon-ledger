@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, Edit } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit, Search, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -47,11 +47,80 @@ export default function AccountsPage() {
     note: ""
   });
 
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterAccount, setFilterAccount] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [isLoading, isAuthenticated, navigate]);
+
+  // Filter transactions
+  const filteredTransactions = transactions?.filter((txn) => {
+    // Search query filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesNote = txn.note?.toLowerCase().includes(query);
+      const matchesCategory = txn.category?.name.toLowerCase().includes(query);
+      const matchesAccount = txn.account?.name.toLowerCase().includes(query);
+      const matchesAmount = txn.amount.toString().includes(query);
+      
+      if (!matchesNote && !matchesCategory && !matchesAccount && !matchesAmount) {
+        return false;
+      }
+    }
+
+    // Type filter
+    if (filterType !== "all" && txn.type !== filterType) {
+      return false;
+    }
+
+    // Category filter
+    if (filterCategory !== "all" && txn.categoryId !== filterCategory) {
+      return false;
+    }
+
+    // Account filter
+    if (filterAccount !== "all" && txn.accountId !== filterAccount) {
+      return false;
+    }
+
+    // Date range filter
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom).getTime();
+      if (txn.date < fromDate) {
+        return false;
+      }
+    }
+
+    if (dateTo) {
+      const toDate = new Date(dateTo).getTime() + 86400000; // Add 1 day to include the end date
+      if (txn.date > toDate) {
+        return false;
+      }
+    }
+
+    return true;
+  }) || [];
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFilterType("all");
+    setFilterCategory("all");
+    setFilterAccount("all");
+    setDateFrom("");
+    setDateTo("");
+  };
+
+  const hasActiveFilters = searchQuery || filterType !== "all" || filterCategory !== "all" || 
+                          filterAccount !== "all" || dateFrom || dateTo;
 
   const handleCreateAccount = async () => {
     try {
@@ -249,22 +318,133 @@ export default function AccountsPage() {
           </div>
         </section>
 
-        {/* Recent Transactions */}
+        {/* Recent Transactions with Filters */}
         <section>
           <h2 className="text-2xl font-bold mb-6 text-foreground">Transaction History</h2>
           <Card className="border-accent/30">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <CardTitle>Recent Transactions</CardTitle>
-                <Button size="sm" onClick={() => setTransactionDialogOpen(true)}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
+                  <Button size="sm" onClick={() => setTransactionDialogOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
+
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search transactions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Advanced Filters */}
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-4 p-4 border border-border rounded-md bg-card/50 space-y-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Type</label>
+                      <Select value={filterType} onValueChange={setFilterType}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          <SelectItem value="income">Income</SelectItem>
+                          <SelectItem value="expense">Expense</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Category</label>
+                      <Select value={filterCategory} onValueChange={setFilterCategory}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          {categories?.map((cat) => (
+                            <SelectItem key={cat._id} value={cat._id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Account</label>
+                      <Select value={filterAccount} onValueChange={setFilterAccount}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Accounts</SelectItem>
+                          {accounts?.map((acc) => (
+                            <SelectItem key={acc._id} value={acc._id}>
+                              {acc.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Date From</label>
+                      <Input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Date To</label>
+                      <Input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {hasActiveFilters && (
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {filteredTransactions.length} of {transactions?.length || 0} transactions
+                      </p>
+                      <Button size="sm" variant="ghost" onClick={clearFilters}>
+                        <X className="h-4 w-4 mr-2" />
+                        Clear Filters
+                      </Button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </CardHeader>
             <CardContent>
-              {transactions && transactions.length > 0 ? (
+              {filteredTransactions.length > 0 ? (
                 <div className="space-y-2">
-                  {transactions.slice(0, 10).map((txn) => (
+                  {filteredTransactions.slice(0, 50).map((txn) => (
                     <motion.div
                       key={txn._id}
                       initial={{ opacity: 0, x: -10 }}
@@ -293,7 +473,11 @@ export default function AccountsPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No transactions yet</p>
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">
+                    {hasActiveFilters ? "No transactions match your filters" : "No transactions yet"}
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>

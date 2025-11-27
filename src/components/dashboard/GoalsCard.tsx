@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Target, Plus, Trash2, TrendingUp } from "lucide-react";
+import { Target, Plus, Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -19,6 +19,8 @@ export function GoalsCard() {
   const deleteGoal = useMutation(api.budget.deleteGoal);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [deletingGoalId, setDeletingGoalId] = useState<Id<"goals"> | null>(null);
   const [goalForm, setGoalForm] = useState({
     name: "",
     targetAmount: 0,
@@ -33,6 +35,7 @@ export function GoalsCard() {
         return;
       }
       
+      setIsCreating(true);
       await createGoal({
         name: goalForm.name,
         targetAmount: goalForm.targetAmount,
@@ -50,17 +53,24 @@ export function GoalsCard() {
       });
     } catch (error) {
       toast.error("Failed to create goal");
+    } finally {
+      setIsCreating(false);
     }
   };
 
   const handleDeleteGoal = async (id: Id<"goals">) => {
     try {
+      setDeletingGoalId(id);
       await deleteGoal({ id });
       toast.success("Goal deleted");
     } catch (error) {
       toast.error("Failed to delete goal");
+    } finally {
+      setDeletingGoalId(null);
     }
   };
+
+  const isLoading = goals === undefined;
 
   return (
     <>
@@ -71,18 +81,23 @@ export function GoalsCard() {
               <Target className="h-5 w-5 text-accent" />
               <CardTitle>Financial Goals</CardTitle>
             </div>
-            <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Button size="sm" onClick={() => setDialogOpen(true)} disabled={isLoading}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>
           <CardDescription>Track your savings goals and progress</CardDescription>
         </CardHeader>
         <CardContent>
-          {goals && goals.length > 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : goals && goals.length > 0 ? (
             <div className="space-y-4">
               {goals.map((goal, index) => {
                 const progress = (goal.currentAmount / goal.targetAmount) * 100;
                 const daysLeft = Math.ceil((goal.deadline - Date.now()) / (1000 * 60 * 60 * 24));
+                const isDeleting = deletingGoalId === goal._id;
                 
                 return (
                   <motion.div
@@ -103,8 +118,13 @@ export function GoalsCard() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleDeleteGoal(goal._id)}
+                        disabled={isDeleting}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        {isDeleting ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-destructive" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        )}
                       </Button>
                     </div>
                     
@@ -149,6 +169,7 @@ export function GoalsCard() {
                 value={goalForm.name}
                 onChange={(e) => setGoalForm({ ...goalForm, name: e.target.value })}
                 placeholder="e.g., Emergency Fund, Vacation"
+                disabled={isCreating}
               />
             </div>
             <div>
@@ -159,6 +180,7 @@ export function GoalsCard() {
                 value={goalForm.targetAmount}
                 onChange={(e) => setGoalForm({ ...goalForm, targetAmount: parseFloat(e.target.value) || 0 })}
                 placeholder="10000"
+                disabled={isCreating}
               />
             </div>
             <div>
@@ -168,6 +190,7 @@ export function GoalsCard() {
                 type="date"
                 value={goalForm.deadline}
                 onChange={(e) => setGoalForm({ ...goalForm, deadline: e.target.value })}
+                disabled={isCreating}
               />
             </div>
             <div>
@@ -177,12 +200,24 @@ export function GoalsCard() {
                 value={goalForm.category}
                 onChange={(e) => setGoalForm({ ...goalForm, category: e.target.value })}
                 placeholder="e.g., Savings, Investment"
+                disabled={isCreating}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateGoal}>Create Goal</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isCreating}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateGoal} disabled={isCreating}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Goal"
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

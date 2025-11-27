@@ -7,6 +7,7 @@ import { GoalsCard } from "@/components/dashboard/GoalsCard";
 import { FinancialPlanner } from "@/components/dashboard/FinancialPlanner";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function GoalsPage() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -43,7 +44,17 @@ export default function GoalsPage() {
         <section>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <GoalsCard />
-            <FinancialPlanner dashboardData={dashboardData} />
+            {dashboardData === undefined ? (
+              <div className="border border-secondary/30 rounded-lg p-6">
+                <Skeleton className="h-8 w-48 mb-4" />
+                <Skeleton className="h-4 w-full mb-6" />
+                <Skeleton className="h-10 w-full mb-4" />
+                <Skeleton className="h-10 w-full mb-4" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : (
+              <FinancialPlanner dashboardData={dashboardData} />
+            )}
           </div>
         </section>
       </motion.div>

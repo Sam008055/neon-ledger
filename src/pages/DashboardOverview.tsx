@@ -37,9 +37,10 @@ export default function DashboardOverview() {
 
   const handleSeedMockData = async () => {
     try {
-      await seedMockData({});
+      const result = await seedMockData({});
       toast.success("🎉 Mock data created! Explore all features now!");
     } catch (error: any) {
+      console.error("Mock data error:", error);
       toast.error(error.message || "Failed to seed data");
     }
   };

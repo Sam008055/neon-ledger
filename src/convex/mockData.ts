@@ -21,7 +21,7 @@ export const seedAllMockData = mutation({
       .first();
     
     if (existingAccounts) {
-      throw new Error("Mock data already exists. Clear it first!");
+      return { success: false, message: "Mock data already exists. Clear it first!" };
     }
 
     // Create Accounts

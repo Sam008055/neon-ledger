@@ -225,20 +225,28 @@ export default function DashboardOverview() {
         </section>
 
         {/* Financial Wellness Section */}
-        <section>
+        <section id="financial-wellness">
           <h2 className="text-lg font-semibold mb-4 text-foreground">Financial Wellness</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <MoodTrackerCard />
-            <SelfCareCard />
+            <div id="mood-tracker">
+              <MoodTrackerCard />
+            </div>
+            <div id="self-care">
+              <SelfCareCard />
+            </div>
           </div>
         </section>
 
         {/* Savings & Subscriptions */}
-        <section>
+        <section id="savings-subscriptions">
           <h2 className="text-lg font-semibold mb-4 text-foreground">Savings & Subscriptions</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SavingsJarCard />
-            <SubscriptionTrackerCard />
+            <div id="savings-jars">
+              <SavingsJarCard />
+            </div>
+            <div id="subscriptions">
+              <SubscriptionTrackerCard />
+            </div>
           </div>
         </section>
 

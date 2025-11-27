@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, Target, Award, TrendingUp, Wallet, Bot, Trophy, BookOpen, Search } from "lucide-react";
+import { Home, Target, Award, TrendingUp, Wallet, Bot, Trophy, BookOpen, Search, Heart, Coins, CreditCard, Smile } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -13,7 +13,7 @@ export function Navigation() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const navItems = [
-    { path: "/dashboard", icon: Home, label: "Overview", keywords: ["home", "dashboard", "main", "overview"] },
+    { path: "/dashboard", icon: Home, label: "Overview", keywords: ["home", "dashboard", "main", "overview", "mood tracker", "savings jars", "subscriptions", "self-care", "wellness"] },
     { path: "/dashboard/accounts", icon: Wallet, label: "Accounts", keywords: ["accounts", "wallet", "transactions", "money"] },
     { path: "/dashboard/analytics", icon: TrendingUp, label: "Analytics", keywords: ["analytics", "charts", "trends", "insights", "reports"] },
     { path: "/dashboard/goals", icon: Target, label: "Goals", keywords: ["goals", "targets", "objectives", "savings goals"] },
@@ -23,7 +23,17 @@ export function Navigation() {
     { path: "/dashboard/ai-assistant", icon: Bot, label: "AI Assistant", keywords: ["ai", "assistant", "chatbot", "help", "advice"] },
   ];
 
-  const filteredItems = navItems.filter(item => {
+  // Quick access features (widgets on dashboard)
+  const quickAccessItems = [
+    { path: "/dashboard", icon: Smile, label: "Mood Tracker", keywords: ["mood", "emotions", "feelings", "spending correlation", "wellness"], section: "mood-tracker" },
+    { path: "/dashboard", icon: Coins, label: "Savings Jars", keywords: ["savings", "jars", "goals", "virtual savings", "save money"], section: "savings-jars" },
+    { path: "/dashboard", icon: CreditCard, label: "Subscriptions", keywords: ["subscriptions", "recurring", "monthly", "bills", "expenses"], section: "subscriptions" },
+    { path: "/dashboard", icon: Heart, label: "Self-Care", keywords: ["self-care", "wellness", "financial health", "treat yourself", "rewards"], section: "self-care" },
+  ];
+
+  const allSearchItems = [...navItems, ...quickAccessItems];
+
+  const filteredItems = allSearchItems.filter(item => {
     const query = searchQuery.toLowerCase();
     return (
       item.label.toLowerCase().includes(query) ||
@@ -31,10 +41,20 @@ export function Navigation() {
     );
   });
 
-  const handleSearch = (item: typeof navItems[0]) => {
+  const handleSearch = (item: typeof allSearchItems[0]) => {
     navigate(item.path);
     setSearchOpen(false);
     setSearchQuery("");
+    
+    // Scroll to section if it's a quick access item
+    if ('section' in item && item.section) {
+      setTimeout(() => {
+        const element = document.getElementById(item.section as string);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -120,7 +140,7 @@ export function Navigation() {
               <AnimatePresence mode="popLayout">
                 {filteredItems.map((item, index) => (
                   <motion.div
-                    key={item.path}
+                    key={`${item.path}-${item.label}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -139,8 +159,11 @@ export function Navigation() {
                       </p>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {location.pathname === item.path && (
+                      {location.pathname === item.path && !('section' in item) && (
                         <span className="text-primary font-semibold">Current</span>
+                      )}
+                      {'section' in item && (
+                        <span className="text-accent font-semibold">Widget</span>
                       )}
                     </div>
                   </motion.div>

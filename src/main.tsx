@@ -59,10 +59,10 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/dashboard" element={<Dashboard />}>
               <Route index element={<DashboardOverview />} />
               <Route path="accounts" element={<AccountsPage />} />
-              <Route path="analytics" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">Analytics - Coming Soon</h1></div>} />
-              <Route path="goals" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">Goals - Coming Soon</h1></div>} />
-              <Route path="achievements" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">Achievements - Coming Soon</h1></div>} />
-              <Route path="ai-assistant" element={<div className="container mx-auto px-4 py-8"><h1 className="text-2xl font-bold">AI Assistant - Coming Soon</h1></div>} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="goals" element={<GoalsPage />} />
+              <Route path="achievements" element={<AchievementsPage />} />
+              <Route path="ai-assistant" element={<AIAssistantPage />} />
             </Route>
             <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
             <Route path="*" element={<NotFound />} />

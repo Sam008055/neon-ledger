@@ -55,6 +55,8 @@ const schema = defineSchema(
       date: v.number(), // timestamp
       note: v.optional(v.string()),
       receiptId: v.optional(v.id("_storage")), // File storage ID for receipt
+      mood: v.optional(v.string()), // 'happy', 'neutral', 'stressed', 'sad', 'excited'
+      isSubscription: v.optional(v.boolean()), // Track recurring subscriptions
     })
       .index("by_user", ["userId"])
       .index("by_account", ["accountId"])
@@ -132,6 +134,26 @@ const schema = defineSchema(
       pointsEarned: v.number(),
     }).index("by_user", ["userId"])
       .index("by_user_and_lesson", ["userId", "lessonId"]),
+
+    savingsJars: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      targetAmount: v.number(),
+      currentAmount: v.number(),
+      color: v.string(), // Hex color for visualization
+      emoji: v.string(), // Visual representation
+      deadline: v.optional(v.number()),
+      status: v.string(), // 'active', 'completed', 'paused'
+    }).index("by_user", ["userId"]),
+
+    moodLogs: defineTable({
+      userId: v.id("users"),
+      date: v.number(),
+      mood: v.string(), // 'happy', 'neutral', 'stressed', 'sad', 'excited'
+      note: v.optional(v.string()),
+      spendingAmount: v.number(), // Total spending on this day
+    }).index("by_user", ["userId"])
+      .index("by_user_and_date", ["userId", "date"]),
   },
   {
     schemaValidation: false,

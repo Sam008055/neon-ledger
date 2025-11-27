@@ -19,6 +19,8 @@ import type * as budget from "../budget.js";
 import type * as challenges from "../challenges.js";
 import type * as http from "../http.js";
 import type * as lessons from "../lessons.js";
+import type * as moodTracking from "../moodTracking.js";
+import type * as savingsJars from "../savingsJars.js";
 import type * as users from "../users.js";
 
 /**
@@ -36,6 +38,8 @@ declare const fullApi: ApiFromModules<{
   challenges: typeof challenges;
   http: typeof http;
   lessons: typeof lessons;
+  moodTracking: typeof moodTracking;
+  savingsJars: typeof savingsJars;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

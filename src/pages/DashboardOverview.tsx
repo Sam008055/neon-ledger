@@ -12,6 +12,8 @@ import { StatsCards } from "@/components/dashboard/StatsCards";
 import { InsightsCard } from "@/components/dashboard/InsightsCard";
 import { SpendingChart } from "@/components/dashboard/SpendingChart";
 import { BankConnectionCard } from "@/components/dashboard/BankConnectionCard";
+import { SavingsJarCard } from "@/components/dashboard/SavingsJarCard";
+import { MoodTrackerCard } from "@/components/dashboard/MoodTrackerCard";
 
 export default function DashboardOverview() {
   const { isLoading, isAuthenticated } = useAuth();

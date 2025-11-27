@@ -281,6 +281,8 @@ export const createTransaction = mutation({
     date: v.number(),
     note: v.optional(v.string()),
     receiptId: v.optional(v.id("_storage")),
+    mood: v.optional(v.string()),
+    isSubscription: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);

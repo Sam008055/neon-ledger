@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, Target, Award, TrendingUp, Wallet, Bot } from "lucide-react";
+import { Home, Target, Award, TrendingUp, Wallet, Bot, Trophy, BookOpen } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 import { motion } from "framer-motion";
 
@@ -12,6 +12,8 @@ export function Navigation() {
     { path: "/dashboard/accounts", icon: Wallet, label: "Accounts" },
     { path: "/dashboard/analytics", icon: TrendingUp, label: "Analytics" },
     { path: "/dashboard/goals", icon: Target, label: "Goals" },
+    { path: "/dashboard/challenges", icon: Trophy, label: "Challenges" },
+    { path: "/dashboard/learn", icon: BookOpen, label: "Learn" },
     { path: "/dashboard/achievements", icon: Award, label: "Achievements" },
     { path: "/dashboard/ai-assistant", icon: Bot, label: "AI Assistant" },
   ];

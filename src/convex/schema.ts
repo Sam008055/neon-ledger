@@ -96,6 +96,42 @@ const schema = defineSchema(
       status: v.string(), // 'connected', 'disconnected', 'error'
       lastSyncedAt: v.optional(v.number()),
     }).index("by_user", ["userId"]),
+
+    challenges: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      description: v.string(),
+      type: v.string(), // 'daily', 'weekly', 'special'
+      difficulty: v.string(), // 'easy', 'medium', 'hard'
+      points: v.number(),
+      status: v.string(), // 'active', 'completed', 'expired'
+      expiresAt: v.number(),
+      completedAt: v.optional(v.number()),
+      requirement: v.string(), // JSON string with challenge requirements
+    }).index("by_user", ["userId"])
+      .index("by_user_and_status", ["userId", "status"]),
+
+    lessons: defineTable({
+      title: v.string(),
+      description: v.string(),
+      category: v.string(), // 'budgeting', 'investing', 'saving', 'debt', 'taxes'
+      difficulty: v.string(), // 'beginner', 'intermediate', 'advanced'
+      content: v.string(),
+      estimatedMinutes: v.number(),
+      points: v.number(),
+      order: v.number(),
+    }).index("by_category", ["category"])
+      .index("by_difficulty", ["difficulty"]),
+
+    userLessons: defineTable({
+      userId: v.id("users"),
+      lessonId: v.id("lessons"),
+      status: v.string(), // 'not_started', 'in_progress', 'completed'
+      progress: v.number(), // 0-100
+      completedAt: v.optional(v.number()),
+      pointsEarned: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_lesson", ["userId", "lessonId"]),
   },
   {
     schemaValidation: false,

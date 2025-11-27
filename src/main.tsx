@@ -17,6 +17,8 @@ import AnalyticsPage from "./pages/AnalyticsPage.tsx";
 import GoalsPage from "./pages/GoalsPage.tsx";
 import AchievementsPage from "./pages/AchievementsPage.tsx";
 import AIAssistantPage from "./pages/AIAssistantPage.tsx";
+import ChallengesPage from "./pages/ChallengesPage.tsx";
+import LearnPage from "./pages/LearnPage.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
@@ -61,6 +63,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="accounts" element={<AccountsPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="goals" element={<GoalsPage />} />
+              <Route path="challenges" element={<ChallengesPage />} />
+              <Route path="learn" element={<LearnPage />} />
               <Route path="achievements" element={<AchievementsPage />} />
               <Route path="ai-assistant" element={<AIAssistantPage />} />
             </Route>

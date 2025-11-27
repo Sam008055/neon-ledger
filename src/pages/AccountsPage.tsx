@@ -3,16 +3,17 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, Edit, Search, Filter, X, Upload, FileText } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit, Search, Filter, X, Upload, FileText, TrendingUp, TrendingDown, Zap, Award, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { ReceiptViewer } from "@/components/ReceiptViewer";
+import { Badge } from "@/components/ui/badge";
 
 export default function AccountsPage() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -138,10 +139,10 @@ export default function AccountsPage() {
           type: accountForm.type,
           initialBalance: accountForm.initialBalance
         });
-        toast.success("Account updated!");
+        toast.success("🎉 Account leveled up!");
       } else {
         await createAccount(accountForm);
-        toast.success("Account created!");
+        toast.success("⚡ New account unlocked!");
       }
       setAccountDialogOpen(false);
       setEditingAccount(null);
@@ -154,7 +155,7 @@ export default function AccountsPage() {
   const handleDeleteAccount = async (id: Id<"accounts">) => {
     try {
       await deleteAccount({ id });
-      toast.success("Account deleted!");
+      toast.success("Account removed!");
     } catch (error: any) {
       toast.error(error.message || "Failed to delete account");
     }
@@ -163,7 +164,7 @@ export default function AccountsPage() {
   const handleCreateCategory = async () => {
     try {
       await createCategory(categoryForm);
-      toast.success("Category created!");
+      toast.success("🎯 Category created!");
       setCategoryDialogOpen(false);
       setCategoryForm({ name: "", type: "expense", color: "#00ffff" });
     } catch (error) {
@@ -198,7 +199,7 @@ export default function AccountsPage() {
       
       setTransactionForm({ ...transactionForm, receiptId: storageId });
       setReceiptFile(file);
-      toast.success("Receipt uploaded successfully!");
+      toast.success("📎 Receipt attached!");
     } catch (error) {
       toast.error("Failed to upload receipt");
     } finally {
@@ -217,7 +218,7 @@ export default function AccountsPage() {
         note: transactionForm.note || undefined,
         receiptId: transactionForm.receiptId
       });
-      toast.success("Transaction created!");
+      toast.success("💰 Transaction recorded! +10 XP");
       setTransactionDialogOpen(false);
       setTransactionForm({
         accountId: "",
@@ -259,120 +260,319 @@ export default function AccountsPage() {
         transition={{ duration: 0.5 }}
         className="space-y-8"
       >
+        {/* Gamified Header Stats */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-6"
+        >
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
+          
+          <div className="relative grid grid-cols-1 md:grid-cols-4 gap-4">
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="flex items-center gap-4 p-4 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/20 shadow-lg shadow-primary/10"
+            >
+              <div className="p-3 rounded-lg bg-primary/20">
+                <Award className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Total Accounts</p>
+                <p className="text-2xl font-bold text-primary">{accounts?.length || 0}</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="flex items-center gap-4 p-4 rounded-xl bg-card/80 backdrop-blur-sm border border-accent/20 shadow-lg shadow-accent/10"
+            >
+              <div className="p-3 rounded-lg bg-accent/20">
+                <Target className="h-6 w-6 text-accent" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Categories</p>
+                <p className="text-2xl font-bold text-accent">{categories?.length || 0}</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="flex items-center gap-4 p-4 rounded-xl bg-card/80 backdrop-blur-sm border border-secondary/20 shadow-lg shadow-secondary/10"
+            >
+              <div className="p-3 rounded-lg bg-secondary/20">
+                <Zap className="h-6 w-6 text-secondary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Transactions</p>
+                <p className="text-2xl font-bold text-secondary">{transactions?.length || 0}</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="flex items-center gap-4 p-4 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/20 shadow-lg shadow-primary/10"
+            >
+              <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
+                <TrendingUp className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Active Filters</p>
+                <p className="text-2xl font-bold text-primary">{hasActiveFilters ? "ON" : "OFF"}</p>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
         {/* Accounts and Categories Management */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Account Management</h2>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-8 w-1 bg-gradient-to-b from-primary to-secondary rounded-full" />
+            <h2 className="text-2xl font-bold text-foreground">Account Management</h2>
+            <Badge variant="outline" className="ml-auto">
+              <Zap className="h-3 w-3 mr-1" />
+              Quick Actions
+            </Badge>
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Accounts */}
-            <Card className="border-primary/30">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Accounts</CardTitle>
-                  <Button size="sm" onClick={() => {
-                    setEditingAccount(null);
-                    setAccountForm({ name: "", type: "bank", initialBalance: 0 });
-                    setAccountDialogOpen(true);
-                  }}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {accounts && accounts.length > 0 ? (
-                  <div className="space-y-2">
-                    {dashboardData?.accountBalances.map((acc) => (
-                      <motion.div
-                        key={acc._id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center justify-between p-3 border border-border rounded-md hover:border-primary/50 transition-all"
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent shadow-xl shadow-primary/5">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/20">
+                        <Award className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-primary">Accounts</CardTitle>
+                    </div>
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                      <Button 
+                        size="sm" 
+                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+                        onClick={() => {
+                          setEditingAccount(null);
+                          setAccountForm({ name: "", type: "bank", initialBalance: 0 });
+                          setAccountDialogOpen(true);
+                        }}
                       >
-                        <div>
-                          <div className="font-medium">{acc.name}</div>
-                          <div className="text-sm text-muted-foreground capitalize">{acc.type}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-primary">₹{acc.balance.toFixed(2)}</span>
-                          <Button size="icon" variant="ghost" onClick={() => {
-                            setEditingAccount(acc._id);
-                            setAccountForm({ name: acc.name, type: acc.type, initialBalance: acc.initialBalance });
-                            setAccountDialogOpen(true);
-                          }}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => handleDeleteAccount(acc._id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </motion.div>
-                    ))}
+                        <Plus className="h-4 w-4 mr-1" />
+                        New
+                      </Button>
+                    </motion.div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">No accounts yet</p>
-                )}
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  {accounts && accounts.length > 0 ? (
+                    <div className="space-y-3">
+                      <AnimatePresence>
+                        {dashboardData?.accountBalances.map((acc, index) => (
+                          <motion.div
+                            key={acc._id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ delay: index * 0.05 }}
+                            whileHover={{ scale: 1.02, x: 5 }}
+                            className="group relative p-4 border-2 border-border rounded-xl hover:border-primary/50 transition-all bg-card/50 backdrop-blur-sm overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            
+                            <div className="relative flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                  <Award className="h-4 w-4 text-primary" />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-foreground">{acc.name}</div>
+                                  <div className="text-xs text-muted-foreground capitalize flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                    {acc.type}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-right mr-2">
+                                  <span className="text-lg font-bold text-primary">₹{acc.balance.toFixed(2)}</span>
+                                </div>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="hover:bg-primary/10"
+                                  onClick={() => {
+                                    setEditingAccount(acc._id);
+                                    setAccountForm({ name: acc.name, type: acc.type, initialBalance: acc.initialBalance });
+                                    setAccountDialogOpen(true);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="hover:bg-destructive/10"
+                                  onClick={() => handleDeleteAccount(acc._id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-12"
+                    >
+                      <div className="p-4 rounded-full bg-primary/10 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <Award className="h-8 w-8 text-primary/50" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">No accounts yet. Start your journey!</p>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Categories */}
-            <Card className="border-secondary/30">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Categories</CardTitle>
-                  <Button size="sm" onClick={() => setCategoryDialogOpen(true)}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {categories && categories.length > 0 ? (
-                  <div className="space-y-2">
-                    {categories.map((cat) => (
-                      <motion.div
-                        key={cat._id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center justify-between p-3 border border-border rounded-md hover:border-secondary/50 transition-all"
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="border-2 border-secondary/30 bg-gradient-to-br from-secondary/5 to-transparent shadow-xl shadow-secondary/5">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-secondary/20">
+                        <Target className="h-5 w-5 text-secondary" />
+                      </div>
+                      <CardTitle className="text-secondary">Categories</CardTitle>
+                    </div>
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                      <Button 
+                        size="sm" 
+                        className="bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 shadow-lg shadow-secondary/20"
+                        onClick={() => setCategoryDialogOpen(true)}
                       >
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color || "#00ffff" }} />
-                          <div>
-                            <div className="font-medium">{cat.name}</div>
-                            <div className="text-sm text-muted-foreground capitalize">{cat.type}</div>
-                          </div>
-                        </div>
-                        <Button size="icon" variant="ghost" onClick={() => handleDeleteCategory(cat._id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </motion.div>
-                    ))}
+                        <Plus className="h-4 w-4 mr-1" />
+                        New
+                      </Button>
+                    </motion.div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">No categories yet</p>
-                )}
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  {categories && categories.length > 0 ? (
+                    <div className="space-y-3">
+                      <AnimatePresence>
+                        {categories.map((cat, index) => (
+                          <motion.div
+                            key={cat._id}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ delay: index * 0.05 }}
+                            whileHover={{ scale: 1.02, x: -5 }}
+                            className="group relative p-4 border-2 border-border rounded-xl hover:border-secondary/50 transition-all bg-card/50 backdrop-blur-sm overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-l from-secondary/0 via-secondary/5 to-secondary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            
+                            <div className="relative flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <motion.div 
+                                  className="w-10 h-10 rounded-lg shadow-lg"
+                                  style={{ backgroundColor: cat.color || "#00ffff" }}
+                                  whileHover={{ rotate: 360 }}
+                                  transition={{ duration: 0.5 }}
+                                />
+                                <div>
+                                  <div className="font-bold text-foreground">{cat.name}</div>
+                                  <div className="text-xs text-muted-foreground capitalize flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+                                    {cat.type}
+                                  </div>
+                                </div>
+                              </div>
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="hover:bg-destructive/10"
+                                onClick={() => handleDeleteCategory(cat._id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-12"
+                    >
+                      <div className="p-4 rounded-full bg-secondary/10 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <Target className="h-8 w-8 text-secondary/50" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">No categories yet. Create one!</p>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </section>
 
-        {/* Recent Transactions with Filters */}
+        {/* Transaction History */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Transaction History</h2>
-          <Card className="border-accent/30">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-8 w-1 bg-gradient-to-b from-accent to-primary rounded-full" />
+            <h2 className="text-2xl font-bold text-foreground">Transaction History</h2>
+            <Badge variant="outline" className="ml-auto">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              {filteredTransactions.length} Records
+            </Badge>
+          </div>
+
+          <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-transparent shadow-xl shadow-accent/5">
             <CardHeader>
               <div className="flex items-center justify-between mb-4">
-                <CardTitle>Recent Transactions</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filters
-                  </Button>
-                  <Button size="sm" onClick={() => setTransactionDialogOpen(true)}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  <div className="p-2 rounded-lg bg-accent/20">
+                    <Zap className="h-5 w-5 text-accent" />
+                  </div>
+                  <CardTitle className="text-accent">Recent Activity</CardTitle>
+                </div>
+                <div className="flex items-center gap-2">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="border-accent/30 hover:bg-accent/10"
+                      onClick={() => setShowFilters(!showFilters)}
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filters
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button 
+                      size="sm"
+                      className="bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 shadow-lg shadow-accent/20"
+                      onClick={() => setTransactionDialogOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      New
+                    </Button>
+                  </motion.div>
                 </div>
               </div>
 
@@ -383,149 +583,207 @@ export default function AccountsPage() {
                   placeholder="Search transactions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-2 border-accent/20 focus:border-accent/50"
                 />
               </div>
 
               {/* Advanced Filters */}
-              {showFilters && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 p-4 border border-border rounded-md bg-card/50 space-y-4"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Type</label>
-                      <Select value={filterType} onValueChange={setFilterType}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="income">Income</SelectItem>
-                          <SelectItem value="expense">Expense</SelectItem>
-                        </SelectContent>
-                      </Select>
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-4 p-4 border-2 border-accent/20 rounded-xl bg-accent/5 backdrop-blur-sm space-y-4"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                          <TrendingUp className="h-3 w-3" />
+                          Type
+                        </label>
+                        <Select value={filterType} onValueChange={setFilterType}>
+                          <SelectTrigger className="border-accent/20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="income">Income</SelectItem>
+                            <SelectItem value="expense">Expense</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                          <Target className="h-3 w-3" />
+                          Category
+                        </label>
+                        <Select value={filterCategory} onValueChange={setFilterCategory}>
+                          <SelectTrigger className="border-accent/20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {categories?.map((cat) => (
+                              <SelectItem key={cat._id} value={cat._id}>
+                                {cat.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                          <Award className="h-3 w-3" />
+                          Account
+                        </label>
+                        <Select value={filterAccount} onValueChange={setFilterAccount}>
+                          <SelectTrigger className="border-accent/20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Accounts</SelectItem>
+                            {accounts?.map((acc) => (
+                              <SelectItem key={acc._id} value={acc._id}>
+                                {acc.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Date From</label>
+                        <Input
+                          type="date"
+                          value={dateFrom}
+                          onChange={(e) => setDateFrom(e.target.value)}
+                          className="border-accent/20"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Date To</label>
+                        <Input
+                          type="date"
+                          value={dateTo}
+                          onChange={(e) => setDateTo(e.target.value)}
+                          className="border-accent/20"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Category</label>
-                      <Select value={filterCategory} onValueChange={setFilterCategory}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Categories</SelectItem>
-                          {categories?.map((cat) => (
-                            <SelectItem key={cat._id} value={cat._id}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Account</label>
-                      <Select value={filterAccount} onValueChange={setFilterAccount}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Accounts</SelectItem>
-                          {accounts?.map((acc) => (
-                            <SelectItem key={acc._id} value={acc._id}>
-                              {acc.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Date From</label>
-                      <Input
-                        type="date"
-                        value={dateFrom}
-                        onChange={(e) => setDateFrom(e.target.value)}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Date To</label>
-                      <Input
-                        type="date"
-                        value={dateTo}
-                        onChange={(e) => setDateTo(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {hasActiveFilters && (
-                    <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <p className="text-sm text-muted-foreground">
-                        Showing {filteredTransactions.length} of {transactions?.length || 0} transactions
-                      </p>
-                      <Button size="sm" variant="ghost" onClick={clearFilters}>
-                        <X className="h-4 w-4 mr-2" />
-                        Clear Filters
-                      </Button>
-                    </div>
-                  )}
-                </motion.div>
-              )}
+                    {hasActiveFilters && (
+                      <div className="flex items-center justify-between pt-2 border-t border-accent/20">
+                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <Zap className="h-3 w-3 text-accent" />
+                          Showing {filteredTransactions.length} of {transactions?.length || 0} transactions
+                        </p>
+                        <Button size="sm" variant="ghost" onClick={clearFilters} className="hover:bg-accent/10">
+                          <X className="h-4 w-4 mr-2" />
+                          Clear Filters
+                        </Button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </CardHeader>
+            
             <CardContent>
               {filteredTransactions.length > 0 ? (
                 <div className="space-y-2">
-                  {filteredTransactions.slice(0, 50).map((txn) => {
-                    const receiptUrl = txn.receiptId ? api.budget.getReceiptUrl : null;
-                    
-                    return (
+                  <AnimatePresence>
+                    {filteredTransactions.slice(0, 50).map((txn, index) => (
                       <motion.div
                         key={txn._id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center justify-between p-3 border border-border rounded-md hover:border-accent/50 transition-all"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ delay: index * 0.02 }}
+                        whileHover={{ scale: 1.01, x: 5 }}
+                        className="group relative p-4 border-2 border-border rounded-xl hover:border-accent/50 transition-all bg-card/50 backdrop-blur-sm overflow-hidden"
                       >
-                        <div className="flex-1">
+                        <div className={`absolute inset-0 bg-gradient-to-r ${txn.type === 'income' ? 'from-accent/0 via-accent/5 to-accent/0' : 'from-destructive/0 via-destructive/5 to-destructive/0'} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                        
+                        <div className="relative flex items-center justify-between">
+                          <div className="flex-1 flex items-center gap-3">
+                            <motion.div 
+                              className={`p-2 rounded-lg ${txn.type === 'income' ? 'bg-accent/20' : 'bg-destructive/20'}`}
+                              whileHover={{ rotate: 360 }}
+                              transition={{ duration: 0.5 }}
+                            >
+                              {txn.type === 'income' ? (
+                                <TrendingUp className="h-4 w-4 text-accent" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-destructive" />
+                              )}
+                            </motion.div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold text-foreground">{txn.category?.name}</span>
+                                <span className="text-xs text-muted-foreground">•</span>
+                                <span className="text-xs text-muted-foreground">{txn.account?.name}</span>
+                                {txn.receiptId && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <FileText className="h-2 w-2 mr-1" />
+                                    Receipt
+                                  </Badge>
+                                )}
+                              </div>
+                              {txn.note && (
+                                <div className="text-sm text-muted-foreground">{txn.note}</div>
+                              )}
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {new Date(txn.date).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+                          
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{txn.category?.name}</span>
-                            <span className="text-xs text-muted-foreground">• {txn.account?.name}</span>
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className={`text-lg font-bold ${txn.type === 'income' ? 'text-accent' : 'text-destructive'}`}
+                            >
+                              {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toFixed(2)}
+                            </motion.div>
                             {txn.receiptId && (
-                              <span title="Has receipt">
-                                <FileText className="h-3 w-3 text-primary" />
-                              </span>
+                              <ReceiptViewer receiptId={txn.receiptId} />
                             )}
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="hover:bg-destructive/10"
+                              onClick={() => handleDeleteTransaction(txn._id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
                           </div>
-                          {txn.note && <div className="text-sm text-muted-foreground">{txn.note}</div>}
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(txn.date).toLocaleDateString()}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`font-bold ${txn.type === 'income' ? 'text-accent' : 'text-destructive'}`}>
-                            {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toFixed(2)}
-                          </span>
-                          {txn.receiptId && (
-                            <ReceiptViewer receiptId={txn.receiptId} />
-                          )}
-                          <Button size="icon" variant="ghost" onClick={() => handleDeleteTransaction(txn._id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
                         </div>
                       </motion.div>
-                    );
-                  })}
+                    ))}
+                  </AnimatePresence>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-16"
+                >
+                  <div className="p-6 rounded-full bg-accent/10 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                    <Zap className="h-12 w-12 text-accent/50" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">
                     {hasActiveFilters ? "No transactions match your filters" : "No transactions yet"}
                   </p>
-                </div>
+                  <p className="text-xs text-muted-foreground">
+                    {hasActiveFilters ? "Try adjusting your filters" : "Start tracking your finances!"}
+                  </p>
+                </motion.div>
               )}
             </CardContent>
           </Card>

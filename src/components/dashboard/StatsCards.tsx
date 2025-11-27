@@ -22,7 +22,7 @@ export function StatsCards({ dashboardData }: StatsCardsProps) {
         <CardContent>
           <div className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
-            <span className="text-2xl font-bold text-primary">${dashboardData.totalBalance.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-primary">₹{dashboardData.totalBalance.toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
@@ -34,7 +34,7 @@ export function StatsCards({ dashboardData }: StatsCardsProps) {
         <CardContent>
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-accent" />
-            <span className="text-2xl font-bold text-accent">${dashboardData.income.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-accent">₹{dashboardData.income.toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
@@ -46,7 +46,7 @@ export function StatsCards({ dashboardData }: StatsCardsProps) {
         <CardContent>
           <div className="flex items-center gap-2">
             <TrendingDown className="h-5 w-5 text-destructive" />
-            <span className="text-2xl font-bold text-destructive">${dashboardData.expense.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-destructive">₹{dashboardData.expense.toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
@@ -59,7 +59,7 @@ export function StatsCards({ dashboardData }: StatsCardsProps) {
           <div className="flex items-center gap-2">
             <Wallet className="h-5 w-5 text-secondary" />
             <span className={`text-2xl font-bold ${dashboardData.net >= 0 ? 'text-accent' : 'text-destructive'}`}>
-              ${dashboardData.net.toFixed(2)}
+              ₹{dashboardData.net.toFixed(2)}
             </span>
           </div>
         </CardContent>

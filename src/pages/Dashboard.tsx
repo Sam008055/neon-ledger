@@ -247,7 +247,7 @@ export default function Dashboard() {
                           <div className="text-sm text-muted-foreground capitalize">{acc.type}</div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-primary">${acc.balance.toFixed(2)}</span>
+                          <span className="font-bold text-primary">₹{acc.balance.toFixed(2)}</span>
                           <Button size="icon" variant="ghost" onClick={() => {
                             setEditingAccount(acc._id);
                             setAccountForm({ name: acc.name, type: acc.type, initialBalance: acc.initialBalance });
@@ -330,7 +330,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`font-bold ${txn.type === 'income' ? 'text-accent' : 'text-destructive'}`}>
-                          {txn.type === 'income' ? '+' : '-'}${txn.amount.toFixed(2)}
+                          {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toFixed(2)}
                         </span>
                         <Button size="icon" variant="ghost" onClick={() => handleDeleteTransaction(txn._id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -378,7 +378,7 @@ export default function Dashboard() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Initial Balance</label>
+              <label className="text-sm font-medium">Initial Balance (₹)</label>
               <Input
                 type="number"
                 value={accountForm.initialBalance}
@@ -485,7 +485,7 @@ export default function Dashboard() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Amount</label>
+              <label className="text-sm font-medium">Amount (₹)</label>
               <Input
                 type="number"
                 value={transactionForm.amount}

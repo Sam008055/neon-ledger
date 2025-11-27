@@ -55,11 +55,11 @@ export function FinancialPlanner({ dashboardData }: FinancialPlannerProps) {
 
     let recommendation = "";
     if (feasible) {
-      recommendation = `Based on your current net income of $${monthlySavings.toFixed(2)}/month, you can reach your goal in ${monthsNeeded} months (${(monthsNeeded / 12).toFixed(1)} years). Stay consistent with your savings!`;
+      recommendation = `Based on your current net income of ₹${monthlySavings.toFixed(2)}/month, you can reach your goal in ${monthsNeeded} months (${(monthsNeeded / 12).toFixed(1)} years). Stay consistent with your savings!`;
     } else {
       const requiredMonthlySavings = targetAmount / 60;
       const additionalSavings = requiredMonthlySavings - monthlySavings;
-      recommendation = `To reach your goal in 5 years, you need to save $${requiredMonthlySavings.toFixed(2)}/month. This requires an additional $${additionalSavings.toFixed(2)}/month. Consider increasing income or reducing expenses.`;
+      recommendation = `To reach your goal in 5 years, you need to save ₹${requiredMonthlySavings.toFixed(2)}/month. This requires an additional ₹${additionalSavings.toFixed(2)}/month. Consider increasing income or reducing expenses.`;
     }
 
     setPlan({
@@ -95,7 +95,7 @@ export function FinancialPlanner({ dashboardData }: FinancialPlannerProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="goalAmount">Target Amount ($)</Label>
+          <Label htmlFor="goalAmount">Target Amount (₹)</Label>
           <Input
             id="goalAmount"
             type="number"
@@ -135,7 +135,7 @@ export function FinancialPlanner({ dashboardData }: FinancialPlannerProps) {
                     <DollarSign className="h-4 w-4 text-accent" />
                     <div>
                       <p className="text-xs text-muted-foreground">Monthly Savings</p>
-                      <p className="font-bold">${plan.monthlySavings.toFixed(2)}</p>
+                      <p className="font-bold">₹{plan.monthlySavings.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>

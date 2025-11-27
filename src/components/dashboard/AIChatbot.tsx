@@ -46,7 +46,7 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
         : null;
       
       if (topCategory) {
-        return `Your biggest spending category is ${topCategory.name} at $${topCategory.amount.toFixed(2)}. Consider setting a budget limit for this category to control expenses.`;
+        return `Your biggest spending category is ${topCategory.name} at ₹${topCategory.amount.toFixed(2)}. Consider setting a budget limit for this category to control expenses.`;
       }
       return "You don't have any spending data yet. Start recording transactions to get insights!";
     }
@@ -83,12 +83,12 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
 
     // Income analysis
     if (lowerMessage.includes("income")) {
-      return `Your monthly income is $${dashboardData.income.toFixed(2)}. Your expenses are $${dashboardData.expense.toFixed(2)}, leaving you with a net flow of $${dashboardData.net.toFixed(2)}.`;
+      return `Your monthly income is ₹${dashboardData.income.toFixed(2)}. Your expenses are ₹${dashboardData.expense.toFixed(2)}, leaving you with a net flow of ₹${dashboardData.net.toFixed(2)}.`;
     }
 
     // Balance inquiry
     if (lowerMessage.includes("balance")) {
-      return `Your total balance across all accounts is $${dashboardData.totalBalance.toFixed(2)}.`;
+      return `Your total balance across all accounts is ₹${dashboardData.totalBalance.toFixed(2)}.`;
     }
 
     // Default response

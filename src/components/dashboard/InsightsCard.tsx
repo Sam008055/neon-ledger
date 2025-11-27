@@ -36,7 +36,7 @@ export function InsightsCard({ dashboardData }: InsightsCardProps) {
         icon: AlertTriangle,
         color: "text-destructive",
         title: "Spending Alert",
-        message: `You're spending $${Math.abs(dashboardData.net).toFixed(2)} more than you earn.`,
+        message: `You're spending ₹${Math.abs(dashboardData.net).toFixed(2)} more than you earn.`,
         recommendation: "Review your expenses and identify areas to cut back."
       });
     }
@@ -50,7 +50,7 @@ export function InsightsCard({ dashboardData }: InsightsCardProps) {
         icon: Target,
         color: "text-secondary",
         title: "Top Spending",
-        message: `${topCategory.name} is your largest expense at $${topCategory.amount.toFixed(2)}.`,
+        message: `${topCategory.name} is your largest expense at ₹${topCategory.amount.toFixed(2)}.`,
         recommendation: "Consider setting a budget limit for this category."
       });
     }

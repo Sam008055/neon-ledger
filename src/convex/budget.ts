@@ -581,6 +581,64 @@ export const getCashFlowForecast = query({
   },
 });
 
+// --- Bank Connections ---
+
+export const getBankConnections = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    return await ctx.db
+      .query("bankConnections")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+  },
+});
+
+export const connectBank = mutation({
+  args: {
+    bankName: v.string(),
+    accountNumber: v.string(),
+    provider: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    
+    return await ctx.db.insert("bankConnections", {
+      userId,
+      bankName: args.bankName,
+      accountNumber: args.accountNumber,
+      provider: args.provider,
+      status: "connected",
+      lastSyncedAt: Date.now(),
+    });
+  },
+});
+
+export const syncBankTransactions = mutation({
+  args: {
+    connectionId: v.id("bankConnections"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    const connection = await ctx.db.get(args.connectionId);
+    
+    if (!connection || connection.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+    
+    // In production, this would call the actual bank API (Setu, RazorpayX, etc.)
+    // For now, we'll simulate syncing by returning a count
+    
+    // Update last synced time
+    await ctx.db.patch(args.connectionId, {
+      lastSyncedAt: Date.now(),
+    });
+    
+    // Return simulated sync result
+    return { count: 0 };
+  },
+});
+
 // --- Receipt Upload ---
 
 export const generateUploadUrl = mutation({

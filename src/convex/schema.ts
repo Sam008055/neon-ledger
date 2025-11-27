@@ -87,6 +87,15 @@ const schema = defineSchema(
       transactionCount: v.number(),
       lastActivityDate: v.number(),
     }).index("by_user", ["userId"]),
+
+    bankConnections: defineTable({
+      userId: v.id("users"),
+      bankName: v.string(),
+      accountNumber: v.string(),
+      provider: v.string(), // 'upi', 'setu', 'razorpayx', etc.
+      status: v.string(), // 'connected', 'disconnected', 'error'
+      lastSyncedAt: v.optional(v.number()),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,

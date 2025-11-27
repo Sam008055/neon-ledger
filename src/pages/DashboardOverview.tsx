@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { InsightsCard } from "@/components/dashboard/InsightsCard";
 import { SpendingChart } from "@/components/dashboard/SpendingChart";
+import { BankConnectionCard } from "@/components/dashboard/BankConnectionCard";
 
 export default function DashboardOverview() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -119,6 +120,11 @@ export default function DashboardOverview() {
             </CardContent>
           </Card>
         )}
+
+        {/* Bank Connection Card */}
+        <section>
+          <BankConnectionCard />
+        </section>
 
         {/* Quick Access Cards */}
         <section>

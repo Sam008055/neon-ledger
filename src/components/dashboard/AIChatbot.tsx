@@ -39,6 +39,34 @@ export function AIChatbot({ dashboardData }: AIChatbotProps) {
 
     const lowerMessage = userMessage.toLowerCase();
 
+    // Cost-cutting analysis
+    if (lowerMessage.includes("cut") || lowerMessage.includes("reduce") || lowerMessage.includes("save money") || lowerMessage.includes("lower")) {
+      if (dashboardData.categoryBreakdown.length === 0) {
+        return "You don't have any expense data yet. Start recording transactions to get cost-cutting recommendations!";
+      }
+
+      const sortedCategories = [...dashboardData.categoryBreakdown].sort((a, b) => b.amount - a.amount);
+      const totalSpending = dashboardData.expense;
+      
+      let analysis = `💡 Cost-Cutting Analysis:\n\n`;
+      analysis += `Total monthly spending: ₹${totalSpending.toFixed(2)}\n\n`;
+      analysis += `Here's where you can reduce costs:\n\n`;
+      
+      sortedCategories.slice(0, 3).forEach((cat, idx) => {
+        const percentage = ((cat.amount / totalSpending) * 100).toFixed(1);
+        const potentialSavings = (cat.amount * 0.2).toFixed(2); // 20% reduction
+        analysis += `${idx + 1}. ${cat.name}: ₹${cat.amount.toFixed(2)} (${percentage}%)\n`;
+        analysis += `   → Reduce by 20%: Save ₹${potentialSavings}/month\n\n`;
+      });
+      
+      if (dashboardData.net < 0) {
+        const deficit = Math.abs(dashboardData.net);
+        analysis += `⚠️ You need to cut at least ₹${deficit.toFixed(2)}/month to break even.\n`;
+      }
+      
+      return analysis;
+    }
+
     // Comprehensive spending analysis
     if (lowerMessage.includes("spending") || lowerMessage.includes("spend") || lowerMessage.includes("expense")) {
       if (dashboardData.categoryBreakdown.length === 0) {
